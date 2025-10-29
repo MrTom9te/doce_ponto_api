@@ -1,0 +1,85 @@
+{
+	"lsp": {
+		// ✅ TypeScript - ESSENCIAL para API
+		"typescript-language-server": {
+			"enabled": true,
+			"settings": {
+				"typescript": {
+					"suggest": {
+						"autoImports": true
+					}
+				}
+			}
+		},
+
+		// ✅ Prisma - ESSENCIAL para ORM
+		"prisma-language-server": {
+			"enabled": true,
+			"settings": {
+				"prisma": {
+					"fileWatcher": true,
+					"trace": {
+						"server": "on"
+					}
+				}
+			}
+		},
+
+		// ✅ ESLint - Recomendado para qualidade de código
+		"eslint": {
+			"enabled": true,
+			"settings": {
+				"format": {
+					"enable": true
+				},
+				"run": "onType"
+			}
+		},
+
+		// ❌ Tailwind - DESABILITADO (não precisa em API)
+		"tailwindcss-language-server": {
+			"enabled": false
+		},
+
+		// ❌ Deno - DESABILITADO (conflita com Node.js)
+		"deno": {
+			"enabled": false
+		},
+
+		// ❌ VTLS - DESABILITADO (Vue, não precisa)
+		"vtsls": {
+			"enabled": false
+		},
+
+		// ❌ HTML/CSS - DESABILITADO (não precisa em API)
+		"html": {
+			"enabled": false
+		},
+		"css": {
+			"enabled": false
+		},
+
+		// ❌ Svelte - DESABILITADO (não precisa)
+		"svelte-language-server": {
+			"enabled": false
+		}
+	},
+
+	// Configurações de formatação
+	"formatter": {
+		"language_server": {
+			"name": "typescript-language-server"
+		}
+	},
+
+	// Auto-save e formato ao salvar
+	"format_on_save": "on",
+	"auto_save": "on_focus_change",
+
+	// Configurações do terminal para variáveis de ambiente
+	"terminal": {
+		"env": {
+			"NODE_ENV": "development"
+		}
+	}
+}
