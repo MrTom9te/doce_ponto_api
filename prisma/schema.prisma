@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+
+  @@map("users")
+
+  id  String  @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  phone String
+  createdAt DateTime @default(now())
+
+  products Product[]
+
+}
+
+model Product {
+   @@map("produtos")
+
+  id String @id @default(uuid() )
+  name String
+  description String
+  price Decimal
+  imageUrl String
+  isActive Boolean @default(true)
+  createdAt DateTime  @default( now() )
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user User @relation(fields: [userId], references:[id], onDelete: Cascade)
+
+  orders Order[]
+}
+
+model Order {
+  @@map("pedidos")
+
+  id String @id @default(uuid())
+  orderNumber String @unique
+  customerName String
+  customerPhone String
+  quantity Int
+  unitPrice Decimal
+  totalPrice Decimal
+  deliveryDate DateTime
+  deliveryTime String
+  observations String? @db.Text
+  status OrderStatus @default(pending)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productId String
+  product Product @relation(fields:[productId], references:[id])
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  production
+  ready
+  delivered
+  cancelled
+}
