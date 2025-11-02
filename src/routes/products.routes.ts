@@ -1,11 +1,9 @@
-import { skip } from "@prisma/client/runtime/library";
 import { type Request, type Response, Router } from "express";
-import { Prisma, PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "@/generated/prisma/client";
 import { authMiddleware } from "@/middleware/auth.middleware";
 import { ApiResult } from "@/types/api.types";
-import type { ListParams, PaginationResponse } from "@/types/pagination.types";
-import type { ListProductsParams, Product, ProductPublic } from "@/types/products.types";
-import { Result } from "@/generated/prisma/internal/prismaNamespace";
+import type { PaginationResponse } from "@/types/pagination.types";
+import type { ListProductsParams, Product } from "@/types/products.types";
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -67,49 +65,7 @@ router.get(
 );
 
 
-router.get("/public/products", async (req: Request<{}, {}, {}, ListParams>, res: Response<PaginationResponse<ProductPublic>>) => {
-  const { page = 1, limit = 20 } = req.query;
-
-  const skip = (Number(page) - 1) * Number(limit);
-  const take = Number(limit);
-
-  const whereClause:any = {}
-  whereClause.isActive = true
-
-  try {
-    const products = await prisma.product.findMany({
-      where: whereClause,
-      skip,
-      take, orderBy: { createdAt: "desc" }
-    })
-
-    const total = await prisma.product.count({ where: whereClause });
-
-    const productsPublic: ProductPublic[] = products.map(p => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      price: p.price.toNumber(), // Certifique-se de converter o Decimal do Prisma
-      imageUrl: p.imageUrl,
-      createdAt: p.createdAt.toISOString(),
-    }));
-
-    res.status(200).json({
-      success: true,
-      data: productsPublic, total, page: Number(page)
-    })
-  } catch (_error) {
-    res.status(200).json({
-      success: false,
-      error: "Erro ao buscar produtos públicos",
-      code: "INTERNAL_SERVER_ERROR"
-    });
-  }
-});
-
-
-
-router.get("/:id", authMiddleware, async (req: Request,res:Response<ApiResult<Product>> ) => {
+router.get("/:id", authMiddleware, async (req: Request<{id:string}>,res:Response<ApiResult<Product>> ) => {
 
   const { id } = req.params;
   const userId = req.userId;
@@ -147,3 +103,5 @@ router.get("/:id", authMiddleware, async (req: Request,res:Response<ApiResult<Pr
     });
   }
 } )
+
+export default router
