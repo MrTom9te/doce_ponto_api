@@ -28,11 +28,22 @@ export const authMiddleware = (
 
 		req.userId = decoded.userId;
 		next();
-	} catch (err) {
+	} catch (_err) {
 		return res.status(401).json({
 			success: false,
 			error: "Token invalido ou expirado.",
 			code: "UNATHOURIZED",
 		});
 	}
+};
+
+export const requireJsonContent = (req: Request, res: Response, next: NextFunction) => {
+  if (req.headers['content-type'] !== 'application/json') {
+    return res.status(415).json({
+      success: false,
+      error: "Content-Type deve ser application/json",
+      code: "UNSUPPORTED_MEDIA_TYPE",
+    });
+  }
+  next(); // Prossegue para o próximo middleware/rota se o Content-Type for JSON
 };
