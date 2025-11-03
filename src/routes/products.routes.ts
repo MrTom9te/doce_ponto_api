@@ -1,5 +1,5 @@
 import { type Request, type Response, Router } from "express";
-import { type Prisma, PrismaClient } from "@/generated/prisma/client";
+import {  Prisma, PrismaClient } from "@/generated/prisma/client";
 import {
 	authMiddleware,
 	requireJsonContent,
@@ -10,6 +10,7 @@ import type {
 	CreateProductRequest,
 	ListProductsParams,
 	Product,
+	ToggleProductRequest,
 	UpdateProductRequest,
 } from "@/types/products.types";
 import {
@@ -182,7 +183,6 @@ router.put(
 
 		const dataToUpdate: Prisma.ProductUpdateInput = {};
 
-		// 1. Validação do ID do produto
 		if (!id || typeof id !== "string") {
 			return res
 				.status(400)
@@ -249,13 +249,10 @@ router.put(
 					});
 			}
 
-			// Processar a imagem se 'imageBase64' for fornecido no corpo da requisição
 			if (imageBase64 !== undefined) {
-				// Tenta fazer o upload da nova imagem
 				const uploadedUrl = await uploadImageFromBase64(imageBase64);
 
 				if (uploadedUrl === null) {
-					// A função de upload já loga o erro internamente se o formato for inválido
 					return res
 						.status(400)
 						.json({
@@ -266,20 +263,12 @@ router.put(
 						});
 				}
 
-				// Se o upload foi bem-sucedido:
-				// Primeiro, deleta a imagem antiga se existir
 				if (existingProduct.imageUrl) {
 					await deleteImageFromFileSystem(existingProduct.imageUrl);
 				}
-				// Em seguida, define a nova URL da imagem para atualização
+
 				dataToUpdate.imageUrl = uploadedUrl;
 			}
-			// FIM DA LÓGICA DE IMAGEM
-			// Se imageBase64 for undefined, a lógica de imagem é ignorada e a imageUrl existente no DB é mantida.
-
-
-			// --- Lógica de atualização e resposta MOVIDA PARA AQUI ---
-			// Se nenhum dado foi fornecido para atualização (nem campos de texto, nem imagem)
 			if (Object.keys(dataToUpdate).length === 0) {
 				return res
 					.status(400)
@@ -293,7 +282,7 @@ router.put(
 			const updatedProduct = await prisma.product.update({
 				where: {
 					id: id,
-					userId: userId, // Garante que apenas o proprietário pode atualizar
+					userId: userId,
 				},
 				data: dataToUpdate,
 			});
@@ -305,8 +294,6 @@ router.put(
 				message: "Produto atualizado com sucesso",
 				data: formattedProduct,
 			});
-			// --- FIM DA LÓGICA MOVIDA ---
-
 		} catch (error) {
 			console.error("Erro ao atualizar produto:", error);
 			res.status(500).json({
@@ -327,7 +314,6 @@ if (!id || typeof id !== "string") {
 }
 
 try {
-  // 1. Find the product to ensure existence, ownership, and get image URL
   const productToDelete = await prisma.product.findUnique({
     where: { id, userId },
     select: { imageUrl: true }
@@ -337,23 +323,16 @@ try {
     return res.status(404).json({ success: false, error: "Produto não encontrado", code: "PRODUCT_NOT_FOUND" });
   }
 
-  // 2. Delete the product from the database
-  // This is the primary action. If it fails, the whole operation fails.
   await prisma.product.delete({
     where: { id, userId },
   });
 
-  // 3. Attempt to delete the associated image file
-  // This is a secondary cleanup action. Failure here should not negate the successful DB deletion.
-  if (productToDelete.imageUrl) {
+    if (productToDelete.imageUrl) {
     try {
       await deleteImageFromFileSystem(productToDelete.imageUrl);
     } catch (imageDeleteError) {
-      // Log a warning if image deletion fails, but proceed to send success response
-      // as the product is already removed from the database. This image might become orphaned.
-      console.warn(`Aviso: Falha ao deletar imagem do produto ${id} ('${productToDelete.imageUrl}') no sistema de arquivos. Imagem pode estar órfã. Erro:`, imageDeleteError);
-      // No need to rethrow or send an error response, as the primary DB deletion succeeded.
-    }
+           console.warn(`Aviso: Falha ao deletar imagem do produto ${id} ('${productToDelete.imageUrl}') no sistema de arquivos. Imagem pode estar órfã. Erro:`, imageDeleteError);
+         }
   }
 
   // 4. Send a success response
@@ -372,5 +351,43 @@ try {
     code: "INTERNAL_SERVER_ERROR",
   });
 }
+});
+
+
+
+router.put("/:id/toggle", authMiddleware, requireJsonContent, async (req: Request<{ id: string }, {},ToggleProductRequest >, res: Response<ApiResult<Product>>) => {
+  const { id } = req.params;
+  const userId = req.userId
+  const {isActive} = req.body;
+
+  try{
+    const updatededProduct = await prisma.product.update({
+      where: { id, userId },
+      data: { isActive: isActive }
+    });
+
+    const formattedProduct = formatProductForApi(updatededProduct);
+
+    res.status(200).json({
+      success:true,
+      message:"Status do produto",
+      data:formattedProduct
+    })
+  }catch(error:unknown){
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+           // P2025 é o código de erro do Prisma para registro não encontrado
+           return res.status(404).json({
+             success: false,
+             error: "Produto não encontrado",
+             code: "PRODUCT_NOT_FOUND",
+           });
+         }
+    console.log("Error ao alternar status do produto:" ,error);
+    res.status(500).json({
+      success: false,
+      error: "Erro interno do servidor  ao atualizar status do produto",
+      code: "INTERNAL_SERVER_ERROR"
+    });
+  }
 });
 export default router;
