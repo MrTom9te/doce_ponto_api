@@ -17,22 +17,15 @@ import {
 	deleteImageFromFileSystem,
 	uploadImageFromBase64,
 } from "@/utils/upload.utils";
+import { formatProductForApi } from "@/utils/format.utils";
 
 const prisma = new PrismaClient();
 const router = Router();
 
-const formatProductForApi = (product: any): Product => ({
-	...product,
-	price: product.price.toNumber(),
-	createdAt: product.createdAt.toISOString(),
-	updatedAt: product.updatedAt.toISOString(),
-});
 
-// ===============================================
-//            ROTAS AUTENTICADAS
-// ===============================================
 
-// 2.1 - Listar Todos os Produtos (da confeiteira)
+
+/// 2.1 - Listar Todos os Produtos (da confeiteira)
 router.get(
 	"/",
 	authMiddleware,
