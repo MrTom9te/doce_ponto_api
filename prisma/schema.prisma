@@ -14,60 +14,62 @@ datasource db {
   url      = "postgresql://doce_ponto:senha123@localhost:5432/doce_ponto"
 }
 
-
 model User {
-
-  @@map("users")
-
-  id  String  @id @default(uuid())
-  name String
-  email String @unique
-  password String
-  phone String
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  phone     String
   createdAt DateTime @default(now())
 
   products Product[]
+  orders   Order[]
 
+  @@map("users")
 }
 
 model Product {
-   @@map("produtos")
-
-  id String @id @default(uuid() )
-  name String
+  id          String   @id @default(uuid())
+  name        String
   description String
-  price Decimal
-  imageUrl String
-  isActive Boolean @default(true)
-  createdAt DateTime  @default( now() )
-  updatedAt DateTime @updatedAt
+  price       Decimal
+  imageUrl    String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   userId String
-  user User @relation(fields: [userId], references:[id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   orders Order[]
+
+  @@map("produtos")
 }
 
 model Order {
-  @@map("pedidos")
-
-  id String @id @default(uuid())
-  orderNumber String @unique
-  customerName String
+  id            String      @id @default(uuid())
+  orderNumber   String      @unique
+  customerName  String
   customerPhone String
-  quantity Int
-  unitPrice Decimal
-  totalPrice Decimal
-  deliveryDate DateTime
-  deliveryTime String
-  observations String? @db.Text
-  status OrderStatus @default(pending)
+  productName   String
+  quantity      Int
+  unitPrice     Decimal
+  totalPrice    Decimal
+  deliveryDate  DateTime
+  deliveryTime  String
+  observations  String?     @db.Text
+  status        OrderStatus @default(pending)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   productId String
-  product Product @relation(fields:[productId], references:[id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("pedidos")
 }
 
 enum OrderStatus {
