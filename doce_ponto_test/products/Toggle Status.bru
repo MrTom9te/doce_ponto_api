@@ -1,0 +1,21 @@
+meta {
+  name: Toggle Status
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/products/{{productId}}/toggle
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "isActive": false
+  }
+}
+
+auth:bearer {
+  token: {{jwt-token}}
+}
