@@ -1,0 +1,14 @@
+meta {
+  name: Get Details
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/products/{{productId}}
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt-token}}
+}

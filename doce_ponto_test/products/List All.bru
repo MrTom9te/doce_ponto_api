@@ -1,0 +1,14 @@
+meta {
+  name: List All
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/products
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{jwt-token}}
+}

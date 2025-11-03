@@ -1,0 +1,21 @@
+meta {
+  name: Update Status
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/orders/{{orderId}}/status
+  body: json
+  auth: bearer
+}
+
+body:json {
+  {
+    "status": "confirmed"
+  }
+}
+
+auth:bearer {
+  token: {{jwt-token}}
+}
