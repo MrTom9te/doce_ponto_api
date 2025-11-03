@@ -318,5 +318,59 @@ router.put(
 	},
 );
 
+router.delete("/:id", authMiddleware, async (req: Request<{ id: string }>, res: Response<ApiResult<null>>) => {
+const { id } = req.params;
+const userId = req.userId;
 
+if (!id || typeof id !== "string") {
+  return res.status(400).json({ success: false, error: "ID do produto inválido", code: "INVALID_INPUT" });
+}
+
+try {
+  // 1. Find the product to ensure existence, ownership, and get image URL
+  const productToDelete = await prisma.product.findUnique({
+    where: { id, userId },
+    select: { imageUrl: true }
+  });
+
+  if (!productToDelete) {
+    return res.status(404).json({ success: false, error: "Produto não encontrado", code: "PRODUCT_NOT_FOUND" });
+  }
+
+  // 2. Delete the product from the database
+  // This is the primary action. If it fails, the whole operation fails.
+  await prisma.product.delete({
+    where: { id, userId },
+  });
+
+  // 3. Attempt to delete the associated image file
+  // This is a secondary cleanup action. Failure here should not negate the successful DB deletion.
+  if (productToDelete.imageUrl) {
+    try {
+      await deleteImageFromFileSystem(productToDelete.imageUrl);
+    } catch (imageDeleteError) {
+      // Log a warning if image deletion fails, but proceed to send success response
+      // as the product is already removed from the database. This image might become orphaned.
+      console.warn(`Aviso: Falha ao deletar imagem do produto ${id} ('${productToDelete.imageUrl}') no sistema de arquivos. Imagem pode estar órfã. Erro:`, imageDeleteError);
+      // No need to rethrow or send an error response, as the primary DB deletion succeeded.
+    }
+  }
+
+  // 4. Send a success response
+  res.status(200).json({
+    success: true,
+    message: "Produto deletado com sucesso",
+    data: null,
+  });
+} catch (error) {
+  // This catch block will only handle errors from prisma.product.findUnique or prisma.product.delete
+  // Errors from image deletion are handled in an inner try-catch for a more graceful failure.
+  console.error("Erro ao deletar produto no banco de dados:", error);
+  res.status(500).json({
+    success: false,
+    error: "Erro interno do servidor ao deletar produto",
+    code: "INTERNAL_SERVER_ERROR",
+  });
+}
+});
 export default router;
