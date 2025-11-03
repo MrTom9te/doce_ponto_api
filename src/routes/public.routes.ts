@@ -1,59 +1,206 @@
 import { type Request, type Response, Router } from "express";
+import moment from "moment";
 import { PrismaClient } from "@/generated/prisma/client";
+import { requireJsonContent } from "@/middleware/auth.middleware";
+import type { ApiResult } from "@/types/api.types";
+import type { CreateOrderRequest, Order } from "@/types/orders.types";
 import type { ListParams, PaginationResponse } from "@/types/pagination.types";
 import type { ProductPublic } from "@/types/products.types";
+import { v4 as uuidV4 } from "uuid";
+import { Decimal } from "@/generated/prisma/internal/prismaNamespace";
+import { formatOrderForApi } from "@/utils/format.utils";
+import { Prisma } from "@prisma/client";
+import { connect } from "net";
 
 const router = Router();
 
 const prisma = new PrismaClient();
 
 router.get(
-	"/products",
-	async (
-		req: Request<{}, {}, {}, ListParams>,
-		res: Response<PaginationResponse<ProductPublic>>,
-	) => {
-		const { page = 1, limit = 20 } = req.query;
+  "/products",
+  async (
+    req: Request<{}, {}, {}, ListParams>,
+    res: Response<PaginationResponse<ProductPublic>>,
+  ) => {
+    const { page = 1, limit = 20 } = req.query;
 
-		const skip = (Number(page) - 1) * Number(limit);
-		const take = Number(limit);
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
 
-		const whereClause: any = {};
-		whereClause.isActive = true;
+    const whereClause: any = {};
+    whereClause.isActive = true;
 
-		try {
-			const products = await prisma.product.findMany({
-				where: whereClause,
-				skip,
-				take,
-				orderBy: { createdAt: "desc" },
-			});
+    try {
+      const products = await prisma.product.findMany({
+        where: whereClause,
+        skip,
+        take,
+        orderBy: { createdAt: "desc" },
+      });
 
-			const total = await prisma.product.count({ where: whereClause });
+      const total = await prisma.product.count({ where: whereClause });
 
-			const productsPublic: ProductPublic[] = products.map((p) => ({
-				id: p.id,
-				name: p.name,
-				description: p.description,
-				price: p.price.toNumber(), // Certifique-se de converter o Decimal do Prisma
-				imageUrl: p.imageUrl,
-				createdAt: p.createdAt.toISOString(),
-			}));
+      const productsPublic: ProductPublic[] = products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price.toNumber(), // Certifique-se de converter o Decimal do Prisma
+        imageUrl: p.imageUrl,
+        createdAt: p.createdAt.toISOString(),
+      }));
 
-			res.status(200).json({
-				success: true,
-				data: productsPublic,
-				total,
-				page: Number(page),
-			});
-		} catch (_error) {
-			res.status(200).json({
-				success: false,
-				error: "Erro ao buscar produtos públicos",
-				code: "INTERNAL_SERVER_ERROR",
-			});
-		}
-	},
+      res.status(200).json({
+        success: true,
+        data: productsPublic,
+        total,
+        page: Number(page),
+      });
+    } catch (_error) {
+      res.status(200).json({
+        success: false,
+        error: "Erro ao buscar produtos públicos",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  },
+);
+
+router.post(
+  "/orders",
+  requireJsonContent,
+  async (
+    req: Request<{}, {}, CreateOrderRequest>,
+    res: Response<ApiResult<Order>>,
+  ) => {
+    const {
+      customerName,
+      customerPhone,
+      deliveryDate,
+      deliveryTime,
+      productId,
+      quantity,
+      observations,
+    } = req.body;
+
+    if (!customerName || customerName.length < 2 || customerName.length > 100) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Nome do cliente é obrigatório e deve ter entre 2 e 100 caracteres",
+        code: "INVALID_INPUT",
+      });
+    }
+    if (!customerPhone || !/^\d{10,11}$/.test(customerPhone)) {
+      return res.status(400).json({
+        success: false,
+        error: "Telefone do cliente é obrigatório e deve ter 10 ou 11 dígitos",
+        code: "INVALID_INPUT",
+      });
+    }
+    if (!productId || typeof productId !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "ID do produto é obrigatório",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    const orderQuantity = quantity && quantity >= 1 ? quantity : 1; // Ajuste para assumir 1 se não informado ou inválido
+
+    if (!deliveryDate || !moment(deliveryDate, "YYYY-MM-DD", true).isValid()) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Data de entrega é obrigatória e deve estar no formato YYYY-MM-DD",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    const deliveryMoment = moment(deliveryDate, "YYYY-MM-DD");
+    if (deliveryMoment.isBefore(moment(), "day")) {
+      return res.status(400).json({
+        success: false,
+        error: "Data de entrega não pode ser no passado",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    if (!deliveryTime || !/^\d{1,2}h(\d{2})?$/.test(deliveryTime)) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Hora de entrega é obrigatória e deve estar no formato '14h' ou '14h30'",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    if (observations && observations.length > 500) {
+      return res.status(400).json({
+        success: false,
+        error: "Observações devem ter no máximo 500 caracteres",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    try {
+      const product = await prisma.product.findUnique({
+        where: { id: productId, isActive: true },
+        select: { id: true, name: true, price: true, userId: true },
+      });
+
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          error: "Produto não encontrado ou inativo",
+          code: "PRODUCT_NOT_AVAILABLE",
+        });
+      }
+
+      const unitPrice = product.price.toNumber();
+      const totalPrice = unitPrice * orderQuantity;
+
+      const orderNumber = `PED-${uuidV4().substring(0, 3).toUpperCase()}-${moment().format("'YYMMDDHHmmss'")}`;
+
+      const newOrder = await prisma.order.create({
+        data: {
+          orderNumber: orderNumber,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          productName: product.name,
+          quantity: orderQuantity,
+          unitPrice: product.price,
+          totalPrice: Decimal(totalPrice),
+          deliveryDate: new Date(deliveryDate),
+          deliveryTime: deliveryTime,
+          observations: observations || "",
+          status: "pending",
+          product: {
+            connect: { id: product.id },
+          },
+          user: {
+            connect: {
+              id: product.userId,
+            },
+          },
+        },
+      });
+
+      const formattedOrder = formatOrderForApi(newOrder);
+
+      res.status(201).json({
+        success: true,
+        message: "Pedido criado com sucesso",
+        data: formattedOrder,
+      });
+    } catch (error) {
+      console.log("Error ao criar pedido:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor ao criar pedido",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  },
 );
 
 export default router;
