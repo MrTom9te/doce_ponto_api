@@ -47,7 +47,7 @@ export const uploadImageFromBase64 = async (
 
 		console.log(filePath, fileName);
 		await fs.writeFile(filePath, buffer);
-		return `/images/${fileName}`;
+		return `images/${fileName}`;
 	} catch (error) {
 		console.error("Erro ao salvar imagem Base64:", error);
 		return null;
