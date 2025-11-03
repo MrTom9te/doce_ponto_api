@@ -3,11 +3,10 @@ import { type Request, type Response, Router } from "express";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@/generated/prisma/client";
 import type { ApiResult } from "@/types/api.types";
-import {
-	type AuthData,
-	AuthResponse,
-	type LoginRequest,
-	type RegisterRequest,
+import type {
+	AuthData,
+	LoginRequest,
+	RegisterRequest,
 } from "@/types/auth.types";
 
 const prisma = new PrismaClient();
