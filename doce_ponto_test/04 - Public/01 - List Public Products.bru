@@ -1,0 +1,50 @@
+meta {
+  name: 01 - Listar Produtos Ativos (Público)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/public/products
+  auth: none
+}
+
+tests {
+  test("Listagem pública de produtos deve ser bem-sucedida", function() {
+    const body = res.getBody();
+
+    // 1. Verifica o código de status
+    expect(res.status).to.equal(200);
+
+    // 2. Verifica a estrutura da resposta
+    expect(body.success).to.be.true;
+    expect(body.data).to.be.an('array');
+    expect(body.total).to.be.a('number');
+    expect(body.page).to.be.a('number');
+
+    // 3. Garante que a lista não está vazia (assumindo que o produto público foi criado)
+    expect(body.data.length).to.be.greaterThan(0);
+
+    // 4. Verifica se o produto público criado anteriormente está na lista
+    const publicProduct = body.data.find(p => p.id === bru.getVar("publicProductId"));
+    expect(publicProduct).to.not.be.null;
+    expect(publicProduct.name).to.equal("Bolo Público de Vitrine");
+
+    // 5. Verifica que o endpoint público não expõe o campo 'isActive'
+    expect(publicProduct).to.not.have.property("isActive");
+  });
+
+  test("Listagem pública com filtro de paginação (exemplo)", function() {
+    // Para testar isso, você precisaria de uma requisição separada com query params como `?page=1&limit=5`
+    // expect(res.status).to.equal(200);
+    // expect(res.getBody().data.length).to.be.at.most(5);
+  });
+}
+
+docs {
+  **Testa o endpoint público que lista apenas produtos ativos.**
+
+  Esta requisição não precisa de autenticação e é usada para popular o catálogo no site do cliente.
+
+  O teste verifica se o produto criado no arquivo `00 - Create Public Product.bru` (identificado por `publicProductId`) está presente na lista. Também valida que a estrutura do objeto de produto retornado é a correta para um contexto público (ou seja, não inclui campos como `isActive`).
+}

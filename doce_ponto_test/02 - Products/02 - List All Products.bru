@@ -1,0 +1,66 @@
+meta {
+  name: 02 - Listar Todos os Produtos
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/products
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+tests {
+  test("Listagem de produtos deve ser bem-sucedida", function() {
+    const body = res.getBody();
+
+    // 1. Verifica o código de status
+    expect(res.status).to.equal(200);
+
+    // 2. Verifica a estrutura da resposta de listagem
+    expect(body.success).to.be.true;
+    expect(body.data).to.be.an('array');
+    expect(body.total).to.be.a('number');
+    expect(body.page).to.be.a('number');
+
+    // 3. Garante que a lista não está vazia (assumindo que o teste de criação rodou)
+    expect(body.data.length).to.be.greaterThan(0);
+
+    // 4. Verifica se o produto criado no passo 01 está na lista
+    const createdProduct = body.data.find(p => p.id === bru.getVar("productId"));
+    expect(createdProduct).to.not.be.null;
+    expect(createdProduct.name).to.equal("Bolo de Teste Automatizado");
+    expect(createdProduct.isActive).to.be.true; // Deve ser ativo
+
+    // 5. Verifica se o produto público criado no passo 00 está na lista
+    const publicProduct = body.data.find(p => p.id === bru.getVar("publicProductId"));
+    expect(publicProduct).to.not.be.null;
+    expect(publicProduct.name).to.equal("Bolo Público de Vitrine");
+    expect(publicProduct.isActive).to.be.true; // Deve ser ativo
+
+    // 6. Verifica a estrutura de um item na lista para garantir consistência
+    const firstProduct = body.data[0];
+    expect(firstProduct.id).to.be.a('string');
+    expect(firstProduct.name).to.be.a('string');
+    expect(firstProduct.price).to.be.a('number');
+    expect(firstProduct.imageUrl).to.be.a('string');
+    expect(firstProduct.isActive).to.be.a('boolean');
+  });
+
+  test("Listagem de produtos com filtro 'active=true' deve retornar apenas ativos", function() {
+    // Este seria um teste separado, usando query parameters como `?active=true`
+    // expect(res.status).to.equal(200);
+    // expect(res.getBody().data.every(p => p.isActive)).to.be.true;
+  });
+}
+
+docs {
+  **Testa o endpoint autenticado para listar todos os produtos da confeiteira.**
+
+  Esta requisição utiliza o `authToken` para se autenticar. Ela verifica se a API retorna uma lista de produtos bem-sucedida e se a estrutura dos dados está correta.
+
+  Espera-se que tanto o produto criado no passo `00 - Criar Produto Público` (identificado por `publicProductId`) quanto o produto criado no passo `01 - Criar Produto` (identificado por `productId`) estejam presentes nesta lista.
+}

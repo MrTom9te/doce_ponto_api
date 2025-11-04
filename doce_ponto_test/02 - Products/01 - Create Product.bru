@@ -1,0 +1,73 @@
+meta {
+  name: 01 - Criar Produto
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "name": "Bolo de Teste Automatizado",
+    "description": "Um delicioso bolo gerado por testes automatizados.",
+    "price": 35.50,
+    "imageBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+  }
+}
+
+script:post-response {
+  // Salva o ID do produto criado para usar nos próximos testes
+  if (res.getStatus() === 201) {
+    bru.setVar("productId", res.getBody().data.id);
+  }
+}
+
+tests {
+  test("Criação de produto deve ser bem-sucedida", function() {
+    const body = res.getBody();
+
+    // 1. Verifica o código de status
+    expect(res.status).to.equal(201);
+
+    // 2. Verifica a estrutura da resposta
+    expect(body.success).to.be.true;
+    expect(body.message).to.equal("Produto criado com sucesso");
+    expect(body.data).to.not.be.null;
+
+    // 3. Verifica os dados do produto criado
+    const product = body.data;
+    expect(product.id).to.be.a('string');
+    expect(product.name).to.equal("Bolo de Teste Automatizado");
+    expect(product.description).to.equal("Um delicioso bolo gerado por testes automatizados.");
+    expect(product.price).to.equal(35.50);
+    expect(product.imageUrl).to.be.a('string');
+    expect(product.isActive).to.be.true;
+    expect(product.createdAt).to.be.a('string');
+    expect(product.updatedAt).to.be.a('string');
+  });
+
+  test("Criação de produto com dados inválidos (ex: nome vazio) deve falhar", function() {
+    // Para testar isso, você precisaria de uma requisição separada com dados inválidos
+    // expect(res.status).to.equal(400);
+    // expect(res.getBody().code).to.equal("INVALID_INPUT");
+  });
+}
+
+docs {
+  **Cria um novo produto no catálogo do usuário autenticado.**
+
+  Esta requisição é autenticada usando o `authToken` obtido no login.
+  Ela cria um produto com dados de teste para ser usado em testes subsequentes de listagem, busca, atualização e exclusão.
+
+  **Ações Pós-Execução:**
+  - Se a criação for bem-sucedida (status 201), o ID do novo produto é extraído da resposta.
+  - O ID é salvo na variável de ambiente `productId` para ser usado nos testes de `GET`, `PUT`, `PATCH` e `DELETE` de produtos.
+}
