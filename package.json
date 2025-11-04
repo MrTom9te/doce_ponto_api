@@ -1,42 +1,42 @@
 {
-	"name": "doce_ponto_api",
-	"module": "index.ts",
-	"type": "module",
-	"private": true,
-	"scripts": {
-		"dev": "bun --hot src/server.ts",
-		"start": "bun src/server.ts",
-		"build": "bun build ./src/server.ts --outdir ./build",
-		"prisma:generate": "bunx --bun prisma generate",
-		"prisma:studio": "bunx --bun prisma studio",
-		"migrate:dev": "bunx --bun prisma migrate dev",
-		"migrate:deploy": "bunx --bun prisma migrate deploy"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.3.2",
-		"@types/bcryptjs": "^3.0.0",
-		"@types/bun": "latest",
-		"@types/express": "^5.0.5",
-		"@types/jsonwebtoken": "^9.0.10",
-		"@types/moment": "^2.13.0",
-		"@types/morgan": "^1.9.10",
-		"@types/node": "^24.9.1",
-		"@types/uuid": "11.0.0",
-		"@typescript-eslint/eslint-plugin": "^8.46.2",
-		"@typescript-eslint/parser": "^8.46.2",
-		"express": "^5.1.0",
-		"moment": "^2.30.1",
-		"morgan": "^1.10.1",
-		"prisma": "^6.18.0",
-		"ts-node-dev": "^2.0.0",
-		"uuid": "13.0.0"
-	},
-	"peerDependencies": {
-		"typescript": "^5.9.3"
-	},
-	"dependencies": {
-		"@prisma/client": "^6.18.0",
-		"bcryptjs": "^3.0.2",
-		"jsonwebtoken": "^9.0.2"
-	}
+  "name": "doce_ponto_api",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot src/server.ts",
+    "start": "bun src/server.ts",
+    "build": "bun build ./src/server.ts --outdir ./build --target=node",
+    "prisma:generate": "bunx --bun prisma generate",
+    "prisma:studio": "bunx --bun prisma studio",
+    "migrate:dev": "bunx --bun prisma migrate dev",
+    "migrate:deploy": "bunx --bun prisma migrate deploy"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.2",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/bun": "latest",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/moment": "^2.13.0",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.9.1",
+    "@types/uuid": "11.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "express": "^5.1.0",
+    "moment": "^2.30.1",
+    "morgan": "^1.10.1",
+    "prisma": "^6.18.0",
+    "ts-node-dev": "^2.0.0",
+    "uuid": "13.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2"
+  }
 }
