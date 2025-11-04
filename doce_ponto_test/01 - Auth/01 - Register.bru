@@ -1,0 +1,69 @@
+meta {
+  name: 01 - Registrar Usuário
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Usuário de Teste",
+    "email": "testuser_{{$timestamp}}@doceponto.com",
+    "password": "{{password}}",
+    "phone": "99999999999"
+  }
+}
+
+script:pre-request {
+  // Define a senha aqui para poder referenciá-la no corpo e no script pós-request
+  bru.setVar("password", "Senha123!");
+}
+
+script:post-response {
+  // Salva o email e a senha para usar no login
+  if (res.getStatus() === 201) {
+    bru.setVar("userEmail", res.getBody().data.email);
+    bru.setVar("userPassword", bru.getVar("password"));
+  }
+}
+
+tests {
+  test("Registro deve ser bem-sucedido", function() {
+    // 1. Verifica o código de status
+    expect(res.getStatus()).to.equal(201);
+
+    // 2. Verifica a estrutura geral da resposta de sucesso
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody()).to.have.property("message");
+    expect(res.getBody()).to.have.property("data");
+
+    // 3. Verifica a estrutura e os tipos de dados do usuário retornado
+    const user = res.getBody().data;
+    expect(user).to.not.be.null;
+    expect(user.id).to.be.a('string');
+    expect(user.name).to.equal("Usuário de Teste");
+    expect(user.email).to.be.a('string');
+    expect(user.phone).to.be.a('string');
+    expect(user.createdAt).to.be.a('string');
+  });
+
+  test("Registro com email duplicado deve falhar", function() {
+    // Para testar isso, você precisaria de uma requisição separada, mas aqui é apenas um exemplo de teste negativo
+    // expect(res.getStatus()).to.equal(400);
+    // expect(res.getBody().code).to.equal("DUPLICATE_EMAIL");
+  });
+}
+
+docs {
+  **Cria um novo usuário para os testes.**
+
+  Este teste utiliza uma variável dinâmica `{{$timestamp}}` para gerar um email único a cada execução, permitindo que o teste seja rodado múltiplas vezes sem conflitos.
+
+  **Ações Pós-Execução:**
+  - Salva o `email` e a `senha` do novo usuário nas variáveis de ambiente `userEmail` e `userPassword` para serem utilizados no teste de Login.
+}

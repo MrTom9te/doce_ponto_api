@@ -1,0 +1,62 @@
+meta {
+  name: 00 - Criar Produto Público
+  type: http
+  seq: 0
+}
+
+post {
+  url: {{baseUrl}}/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{authToken}}
+}
+
+body:json {
+  {
+    "name": "Bolo Público de Vitrine",
+    "description": "Um bolo delicioso que ficará sempre ativo para testes públicos.",
+    "price": 25.00,
+    "imageBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+  }
+}
+
+script:post-response {
+  // Salva o ID do produto público para usar nos testes de endpoints públicos
+  if (res.getStatus() === 201) {
+    bru.setVar("publicProductId", res.getBody().data.id);
+  }
+}
+
+tests {
+  test("Criação de produto público deve ser bem-sucedida", function() {
+    const body = res.getBody();
+
+    // 1. Verifica o código de status
+    expect(res.status).to.equal(201);
+
+    // 2. Verifica a estrutura da resposta
+    expect(body.success).to.be.true;
+    expect(body.data).to.not.be.null;
+    expect(body.message).to.equal("Produto criado com sucesso");
+
+    // 3. Verifica os dados do produto criado
+    const product = body.data;
+    expect(product.id).to.be.a('string');
+    expect(product.name).to.equal("Bolo Público de Vitrine");
+    expect(product.price).to.equal(25.00);
+    expect(product.imageUrl).to.be.a('string');
+    expect(product.isActive).to.be.true;
+  });
+}
+
+docs {
+  **Cria um produto que permanecerá ativo para testar os endpoints públicos.**
+
+  Este teste é executado antes do ciclo CRUD principal de produtos para garantir que haja um item consistente para os testes não autenticados (`/public/...`).
+
+  **Ações Pós-Execução:**
+  - Salva o ID do produto na variável de ambiente `publicProductId` se a criação for bem-sucedida.
+}
