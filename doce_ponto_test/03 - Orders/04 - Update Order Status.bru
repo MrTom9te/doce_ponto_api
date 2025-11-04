@@ -20,22 +20,23 @@ body:json {
   }
 }
 
-script:post-response {
-  // Nada para salvar aqui, apenas testar a resposta
+script:pre-request {
+  let orderIdVar = bru.getEnvVar("orderId");
+  bru.setEnvVar("testOrderIdVar", orderIdVar);
 }
 
 tests {
   test("Atualização de status do pedido para 'confirmed' deve ser bem-sucedida", function() {
     const body = res.getBody();
-
+  
     // 1. Verifica o código de status
     expect(res.status).to.equal(200);
-
+  
     // 2. Verifica a estrutura da resposta
     expect(body.success).to.be.true;
     expect(body.message).to.equal("Status do pedido atualizado com sucesso");
     expect(body.data).to.not.be.null;
-
+  
     // 3. Verifica se o status do pedido foi realmente atualizado
     const order = body.data;
     expect(order.id).to.equal(bru.getVar("orderId"));
@@ -46,13 +47,13 @@ tests {
       expect(order.deliveryDate.slice(0, 10)).to.equal("2099-12-31");
     }
   });
-
+  
   test("Atualização de status de pedido com ID inexistente deve retornar 404", function() {
     // Para testar isso, você precisaria de uma requisição separada com um ID inválido
     // expect(res.status).to.equal(404);
     // expect(res.getBody().code).to.equal("ORDER_NOT_FOUND");
   });
-
+  
   test("Atualização de status de pedido com status inválido (ex: 'invalid') deve retornar 400", function() {
     // Para testar isso, você precisaria de uma requisição separada com um status inválido
     // expect(res.status).to.equal(400);
@@ -62,10 +63,10 @@ tests {
 
 docs {
   **Testa o endpoint autenticado para atualizar o status de um pedido.**
-
+  
   Esta requisição utiliza o `authToken` para autenticação e o `orderId` para identificar o pedido cujo status será atualizado.
   É enviada uma requisição PATCH para o endpoint `/orders/:id/status` com o novo status (`confirmed`) no corpo.
-
+  
   O teste valida se a API retorna uma resposta de sucesso e se o status do pedido retornado no corpo da resposta é o novo status (`confirmed`).
   Também verifica condicionalmente o formato de `deliveryDate` se ele for retornado na resposta.
 }

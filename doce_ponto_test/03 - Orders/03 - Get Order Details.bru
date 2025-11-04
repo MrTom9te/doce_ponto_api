@@ -10,6 +10,10 @@ get {
   auth: bearer
 }
 
+headers {
+  Content-Type: application/json
+}
+
 auth:bearer {
   token: {{authToken}}
 }
@@ -25,14 +29,14 @@ script:post-response {
 tests {
   test("Obtenção de detalhes do pedido deve ser bem-sucedida", function() {
     const body = res.getBody();
-
+  
     // 1. Verifica o código de status
     expect(res.status).to.equal(200);
-
+  
     // 2. Verifica a estrutura da resposta
     expect(body.success).to.be.true;
     expect(body.data).to.not.be.null;
-
+  
     // 3. Verifica se o pedido retornado é o correto
     const order = body.data;
     expect(order.id).to.equal(bru.getVar("orderId"));
@@ -51,7 +55,7 @@ tests {
     expect(order.createdAt).to.be.a('string');
     expect(order.updatedAt).to.be.a('string');
   });
-
+  
   test("Obtenção de detalhes do pedido com ID inexistente deve retornar 404", function() {
     // Para testar isso, você precisaria de uma requisição separada com um ID inválido
     // expect(res.status).to.equal(404);
@@ -61,8 +65,8 @@ tests {
 
 docs {
   **Testa o endpoint autenticado para obter os detalhes de um pedido específico.**
-
+  
   Esta requisição utiliza o `authToken` para autenticação e o `orderId` (salvo pelo teste `01 - Criar Pedido (Público)`) como parâmetro na URL para identificar o recurso.
-
+  
   Os testes validam se a API retorna os dados corretos para o pedido solicitado e se a estrutura da resposta está de acordo com a especificação, com o `deliveryDate` ajustado para o formato "YYYY-MM-DD" para comparação.
 }

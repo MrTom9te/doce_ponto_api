@@ -6,6 +6,7 @@ meta {
 
 get {
   url: {{baseUrl}}/public/orders/{{orderId}}
+  body: none
   auth: none
 }
 
@@ -14,26 +15,17 @@ script:pre-request {
   console.log("DEBUG: orderNumber for Get Public Order Status (pre-request): ", bru.getVar("orderNumber"));
 }
 
-script:post-response {
-  // Limpa as variáveis publicProductId e orderId após o uso
-  // para garantir que os testes possam ser reexecutados sem conflitos.
-  bru.setVar("publicProductId", null);
-  bru.setVar("orderId", null);
-  bru.setVar("orderNumber", null);
-  console.log("DEBUG: Variáveis orderId, orderNumber e publicProductId limpas.");
-}
-
 tests {
   test("Obtenção de status público de um pedido deve ser bem-sucedida", function() {
     const body = res.getBody();
-
+  
     // 1. Verifica o código de status
     expect(res.status).to.equal(200);
-
+  
     // 2. Verifica a estrutura da resposta
     expect(body.success).to.be.true;
     expect(body.data).to.not.be.null;
-
+  
     // 3. Verifica os dados do pedido expostos publicamente
     const order = body.data;
     expect(order.id).to.equal(bru.getVar("orderId"));
@@ -43,14 +35,14 @@ tests {
     expect(order.deliveryDate.slice(0, 10)).to.equal("2099-12-31"); // Ajustado para slice
     expect(order.deliveryTime).to.equal("15h");
     expect(order.updatedAt).to.be.a('string');
-
+  
     // 4. Verifica que campos sensíveis não são expostos publicamente
     expect(order).to.not.have.property("productId");
     expect(order).to.not.have.property("unitPrice");
     expect(order).to.not.have.property("totalPrice");
     expect(order).to.not.have.property("customerPhone");
   });
-
+  
   test("Obtenção de status público de pedido com ID/número inexistente deve retornar 404", function() {
     // Para testar isso, você precisaria de uma requisição separada com um ID/número inválido
     // expect(res.status).to.equal(404);
@@ -60,11 +52,11 @@ tests {
 
 docs {
   **Testa o endpoint público para consultar o status de um pedido.**
-
+  
   Esta requisição não precisa de autenticação. Ela permite que um cliente consulte o progresso do seu pedido usando o `{{orderId}}` ou `{{orderNumber}}` obtido na criação do pedido.
-
+  
   Os testes verificam se a API retorna as informações essenciais do pedido (ID, número, nome do cliente, status, data e hora de entrega) e, crucialmente, se não expõe dados sensíveis (como `productId`, `unitPrice`, `totalPrice`, `customerPhone`).
-
+  
   **Ações Pós-Execução:**
   - Após a execução, as variáveis de ambiente `publicProductId`, `orderId` e `orderNumber` são limpas para garantir que os testes possam ser executados de forma isolada em futuras rodadas (se necessário) e para evitar vazamento de dados entre execuções.
 }
