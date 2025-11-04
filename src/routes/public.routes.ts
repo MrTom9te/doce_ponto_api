@@ -3,12 +3,19 @@ import moment from "moment";
 import { PrismaClient } from "@/generated/prisma/client";
 import { requireJsonContent } from "@/middleware/auth.middleware";
 import type { ApiResult } from "@/types/api.types";
-import type { CreateOrderRequest, Order } from "@/types/orders.types";
+import type {
+  CreateOrderRequest,
+  Order,
+  OrderPublicResponse,
+} from "@/types/orders.types";
 import type { ListParams, PaginationResponse } from "@/types/pagination.types";
 import type { ProductPublic } from "@/types/products.types";
 import { v4 as uuidV4 } from "uuid";
 import { Decimal } from "@/generated/prisma/internal/prismaNamespace";
-import { formatOrderForApi } from "@/utils/format.utils";
+import {
+  formatOrderForApi,
+  formatOrderPublicForApi,
+} from "@/utils/format.utils";
 import { Prisma } from "@prisma/client";
 import { connect } from "net";
 
@@ -203,4 +210,58 @@ router.post(
   },
 );
 
+router.get(
+  "/orders/:id",
+
+  async (req: Request<{ id: string }>, res: Response<OrderPublicResponse>) => {
+    const { id } = req.params; // O 'id' pode ser UUID ou orderNumber
+
+    // 1. Validação do ID/OrderNumber
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "ID ou número do pedido inválido",
+        code: "INVALID_INPUT",
+      });
+    }
+
+    try {
+      let order: any;
+      if (id.includes("-")) {
+        order = await prisma.order.findUnique({
+          where: { id: id },
+        });
+      }
+
+      if (!order) {
+        order = await prisma.order.findUnique({
+          where: {
+            orderNumber: id,
+          },
+        });
+      }
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          error: "Pedido não encontrado",
+          code: "ORDER_NOT_FOUND",
+        });
+      }
+
+      const formattedPublicOrder = formatOrderPublicForApi(order);
+      res.status(200).json({
+        success: true,
+        data: formattedPublicOrder,
+      });
+    } catch (error) {
+      console.error("Erro ao obter status público do pedido:", error);
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor ao obter status do pedido",
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    }
+  },
+);
 export default router;
