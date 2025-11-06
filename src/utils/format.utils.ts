@@ -1,3 +1,4 @@
+import { Prisma } from "@/generated/prisma/client";
 import type {
   Order,
   OrderPublic,
@@ -6,6 +7,7 @@ import type {
 import type { Product } from "@/types/products.types";
 
 export const formatOrderForApi = (order: any): Order => ({
+  // --- Campos que já existiam ---
   id: order.id,
   orderNumber: order.orderNumber,
   customerName: order.customerName,
@@ -21,7 +23,21 @@ export const formatOrderForApi = (order: any): Order => ({
   status: order.status,
   createdAt: order.createdAt.toISOString(),
   updatedAt: order.updatedAt.toISOString(),
+
+  // --- Novos campos a serem adicionados ---
+  customerEmail: order.customerEmail,
+  customerTaxId: order.customerTaxId,
+  address: {
+    street: order.street,
+    number: order.number,
+    neighborhood: order.neighborhood,
+    city: order.city,
+    state: order.state,
+    zipCode: order.zipCode,
+    complement: order.complement,
+  },
 });
+
 export const formatOrderPublicForApi = (order: any): OrderPublic => ({
   id: order.id,
   orderNumber: order.orderNumber,
