@@ -18,11 +18,58 @@ import { isOrderStatus } from "@/utils/validators";
 const prisma = new PrismaClient();
 const router = Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Pedidos (Gerenciamento)
+ *   description: Endpoints para a confeiteira gerenciar os pedidos recebidos.
+ */
+
+/**
+ * @swagger
+ * /orders:
+ *   get:
+ *     summary: Lista todos os pedidos recebidos pela confeiteira.
+ *     tags: [Pedidos (Gerenciamento)]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: O número da página.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: O número de itens por página.
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, confirmed, production, ready, delivered, cancelled]
+ *         description: Filtra pedidos por um status específico.
+ *     responses:
+ *       '200':
+ *         description: Uma lista paginada de pedidos.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Order'
+ */
 router.get(
   "/",
   authMiddleware,
   async (
-    req: Request<{}, {}, ListOrdersParams>,
+    req: Request<{}, {}, {}, ListOrdersParams>,
     res: Response<PaginationResponse<Order>>,
   ) => {
     const userId = req.userId;
@@ -41,7 +88,9 @@ router.get(
       } else {
         return res.status(400).json({
           success: false,
-          error: `Status inválido. Status válidos são: ${Object.values(OrderStatus).join(", ")}`,
+          error: `Status inválido. Status válidos são: ${Object.values(
+            OrderStatus,
+          ).join(", ")}`,
           code: "INVALID_INPUT",
         });
       }
@@ -77,10 +126,34 @@ router.get(
   },
 );
 
+/**
+ * @swagger
+ * /orders/{id}:
+ *   get:
+ *     summary: Obtém os detalhes de um pedido específico.
+ *     tags: [Pedidos (Gerenciamento)]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: O ID do pedido.
+ *     responses:
+ *       '200':
+ *         description: Detalhes do pedido.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       '404':
+ *         description: Pedido não encontrado.
+ */
 router.get(
   "/:id",
   authMiddleware,
-  requireJsonContent,
   async (req: Request<{ id: string }>, res: Response<ApiResult<Order>>) => {
     const { id } = req.params;
     const userId = req.userId;
@@ -95,7 +168,7 @@ router.get(
       if (!order) {
         return res.status(404).json({
           success: false,
-          error: "PEdido nao encontrado",
+          error: "Pedido nao encontrado",
           code: "ORDER_NOT_FOUND",
         });
       }
@@ -116,6 +189,40 @@ router.get(
   },
 );
 
+/**
+ * @swagger
+ * /orders/{id}/status:
+ *   patch:
+ *     summary: Atualiza o status de um pedido.
+ *     tags: [Pedidos (Gerenciamento)]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: O ID do pedido a ser atualizado.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, confirmed, production, ready, delivered, cancelled]
+ *                 description: O novo status do pedido.
+ *     responses:
+ *       '200':
+ *         description: Status do pedido atualizado com sucesso.
+ *       '400':
+ *         description: Status inválido.
+ *       '404':
+ *         description: Pedido não encontrado.
+ */
 router.patch(
   "/:id/status",
   requireJsonContent,
@@ -147,7 +254,9 @@ router.patch(
     if (!isOrderStatus(status)) {
       return res.status(400).json({
         success: false,
-        error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(OrderStatus).join(", ")}`,
+        error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(
+          OrderStatus,
+        ).join(", ")}`,
         code: "INVALID_STATUS", // Código de erro específico da especificação
       });
     }
