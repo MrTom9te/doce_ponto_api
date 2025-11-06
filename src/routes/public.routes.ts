@@ -1,6 +1,6 @@
 import { type Request, type Response, Router } from "express";
 import moment from "moment";
-import { PrismaClient } from "@/generated/prisma/client";
+import { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { requireJsonContent } from "@/middleware/auth.middleware";
 import type { ApiResult } from "@/types/api.types";
 import type {
@@ -16,8 +16,6 @@ import {
   formatOrderForApi,
   formatOrderPublicForApi,
 } from "@/utils/format.utils";
-import { Prisma } from "@prisma/client";
-import { connect } from "net";
 import { abacate } from "@/services/abacate.service";
 
 const router = Router();
@@ -75,70 +73,105 @@ router.get(
 
 router.post(
   "/orders",
+
   requireJsonContent,
+
   async (
     req: Request<{}, {}, CreateOrderRequest>,
+
     res: Response<ApiResult<Order & { paymentUrl?: string }>>,
   ) => {
     const {
       customerName,
+
       customerPhone,
+
       customerEmail,
+
       customerTaxId,
+
       deliveryDate,
+
       deliveryTime,
+
       productId,
+
       quantity,
+
       observations,
+
       address,
+
+      deliveryType = "DELIVERY", // Assumimos DELIVERY como padrão
     } = req.body;
 
     // --- VALIDAÇÕES ---
+
+    if (deliveryType === "DELIVERY") {
+      if (
+        !address ||
+        typeof address !== "object" ||
+        !address.street ||
+        !address.city
+      ) {
+        return res.status(400).json({
+          success: false,
+
+          error:
+            "Endereço completo é obrigatório para o tipo de entrega 'DELIVERY'.",
+
+          code: "INVALID_INPUT",
+        });
+      }
+    }
+
     if (!customerName || customerName.length < 2 || customerName.length > 100) {
       return res.status(400).json({
         success: false,
+
         error:
           "Nome do cliente é obrigatório e deve ter entre 2 e 100 caracteres",
+
         code: "INVALID_INPUT",
       });
     }
+
     if (!customerPhone || !/^\d{10,11}$/.test(customerPhone)) {
       return res.status(400).json({
         success: false,
+
         error: "Telefone do cliente é obrigatório e deve ter 10 ou 11 dígitos",
+
         code: "INVALID_INPUT",
       });
     }
+
     if (!customerEmail || !/^[\S]+@[\S]+\.[\S]+$/.test(customerEmail)) {
       return res.status(400).json({
         success: false,
+
         error: "Email do cliente é obrigatório e deve ser válido",
+
         code: "INVALID_INPUT",
       });
     }
+
     if (!customerTaxId || !/^\d{11}$/.test(customerTaxId)) {
       return res.status(400).json({
         success: false,
+
         error: "CPF do cliente é obrigatório e deve ter 11 dígitos",
+
         code: "INVALID_INPUT",
       });
     }
-    if (
-      !address ||
-      typeof address !== "object" ||
-      !address.street ||
-      !address.city
-    ) {
-      return res.status(400).json({
-        success: false,
-        error: "Endereço é obrigatório e deve conter pelo menos rua e cidade.",
-        code: "INVALID_INPUT",
-      });
-    }
+
     if (!productId || typeof productId !== "string") {
       return res.status(400).json({
         success: false,
+
         error: "ID do produto é obrigatório",
+
         code: "INVALID_INPUT",
       });
     }
@@ -148,17 +181,22 @@ router.post(
     if (!deliveryDate || !moment(deliveryDate, "YYYY-MM-DD", true).isValid()) {
       return res.status(400).json({
         success: false,
+
         error:
           "Data de entrega é obrigatória e deve estar no formato YYYY-MM-DD",
+
         code: "INVALID_INPUT",
       });
     }
 
     const deliveryMoment = moment(deliveryDate, "YYYY-MM-DD");
+
     if (deliveryMoment.isBefore(moment(), "day")) {
       return res.status(400).json({
         success: false,
+
         error: "Data de entrega não pode ser no passado",
+
         code: "INVALID_INPUT",
       });
     }
@@ -166,8 +204,10 @@ router.post(
     if (!deliveryTime || !/^\d{1,2}h(\d{2})?$/.test(deliveryTime)) {
       return res.status(400).json({
         success: false,
+
         error:
           "Hora de entrega é obrigatória e deve estar no formato '14h' ou '14h30'",
+
         code: "INVALID_INPUT",
       });
     }
@@ -175,7 +215,9 @@ router.post(
     if (observations && observations.length > 500) {
       return res.status(400).json({
         success: false,
+
         error: "Observações devem ter no máximo 500 caracteres",
+
         code: "INVALID_INPUT",
       });
     }
@@ -183,11 +225,16 @@ router.post(
     try {
       const product = await prisma.product.findUnique({
         where: { id: productId, isActive: true },
+
         select: {
           id: true,
+
           name: true,
+
           price: true,
+
           userId: true,
+
           description: true,
         },
       });
@@ -195,75 +242,115 @@ router.post(
       if (!product) {
         return res.status(400).json({
           success: false,
+
           error: "Produto não encontrado ou inativo",
+
           code: "PRODUCT_NOT_AVAILABLE",
         });
       }
 
       const unitPrice = product.price.toNumber();
+
       const totalPrice = unitPrice * orderQuantity;
 
       const orderNumber = `PED-${uuidV4().substring(0, 3).toUpperCase()}-${moment().format("'YYMMDDHHmmss'")}`;
 
-      const newOrder = await prisma.order.create({
-        data: {
-          orderNumber: orderNumber,
-          customerName: customerName,
-          customerPhone: customerPhone,
-          customerEmail: customerEmail,
-          customerTaxId: customerTaxId,
-          productName: product.name,
-          quantity: orderQuantity,
-          unitPrice: product.price,
-          totalPrice: new Decimal(totalPrice),
-          deliveryDate: new Date(deliveryDate),
-          deliveryTime: deliveryTime,
-          observations: observations || "",
-          status: "pending",
-          street: address.street,
-          number: address.number,
-          neighborhood: address.neighborhood,
-          city: address.city,
-          state: address.state,
-          zipCode: address.zipCode,
-          complement: address.complement,
-          product: {
-            connect: { id: product.id },
-          },
-          user: {
-            connect: {
-              id: product.userId,
-            },
-          },
-        },
-      });
+      // Prepara os dados do pedido
+
+      const orderData: Prisma.OrderCreateInput = {
+        orderNumber,
+
+        customerName,
+
+        customerPhone,
+
+        customerEmail,
+
+        customerTaxId,
+
+        productName: product.name,
+
+        quantity: orderQuantity,
+
+        unitPrice: product.price,
+
+        totalPrice: new Decimal(totalPrice),
+
+        deliveryDate: new Date(deliveryDate),
+
+        deliveryTime,
+
+        observations: observations || "",
+
+        status: "pending",
+
+        deliveryType,
+
+        product: { connect: { id: product.id } },
+
+        user: { connect: { id: product.userId } },
+      };
+
+      // Adiciona o endereço apenas se for entrega
+
+      if (deliveryType === "DELIVERY" && address) {
+        orderData.street = address.street;
+
+        orderData.number = address.number;
+
+        orderData.neighborhood = address.neighborhood;
+
+        orderData.city = address.city;
+
+        orderData.state = address.state;
+
+        orderData.zipCode = address.zipCode;
+
+        orderData.complement = address.complement;
+      }
+
+      const newOrder = await prisma.order.create({ data: orderData });
 
       const billing = await abacate.billing.create({
         frequency: "ONE_TIME",
+
         methods: ["PIX"],
+
         products: [
           {
             externalId: newOrder.id,
+
             name: newOrder.productName,
+
             quantity: orderQuantity,
+
             price: Math.round(totalPrice * 100),
+
             description: product.description,
           },
         ],
+
         returnUrl: "http://localhost:3001/order-summary",
+
         completionUrl: `http://localhost:3001/order/${newOrder.id}/success`,
+
         customer: {
           name: customerName,
+
           email: customerEmail,
+
           cellphone: `+55${customerPhone}`,
+
           taxId: customerTaxId,
         },
       });
 
       const updatedOrderWithPayment = await prisma.order.update({
         where: { id: newOrder.id },
+
         data: {
           paymentProviderId: billing.data?.id,
+
           paymentUrl: billing.data?.url,
         },
       });
@@ -272,17 +359,23 @@ router.post(
 
       res.status(201).json({
         success: true,
+
         message: "Pedido criado com sucesso",
+
         data: {
           ...formattedOrder,
+
           paymentUrl: billing.data?.url,
         },
       });
     } catch (error) {
       console.log("Error ao criar pedido:", error);
+
       res.status(500).json({
         success: false,
+
         error: "Erro interno do servidor ao criar pedido",
+
         code: "INTERNAL_SERVER_ERROR",
       });
     }
