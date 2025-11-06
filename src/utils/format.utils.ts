@@ -12,6 +12,8 @@ export const formatOrderForApi = (order: any): Order => ({
   orderNumber: order.orderNumber,
   customerName: order.customerName,
   customerPhone: order.customerPhone,
+  customerEmail: order.customerEmail,
+  customerTaxId: order.customerTaxId,
   productId: order.productId,
   productName: order.productName,
   quantity: order.quantity,
@@ -24,18 +26,19 @@ export const formatOrderForApi = (order: any): Order => ({
   createdAt: order.createdAt.toISOString(),
   updatedAt: order.updatedAt.toISOString(),
 
-  // --- Novos campos a serem adicionados ---
-  customerEmail: order.customerEmail,
-  customerTaxId: order.customerTaxId,
-  address: {
-    street: order.street,
-    number: order.number,
-    neighborhood: order.neighborhood,
-    city: order.city,
-    state: order.state,
-    zipCode: order.zipCode,
-    complement: order.complement,
-  },
+  deliveryType: order.deliveryType,
+
+  address: order.street
+    ? {
+        street: order.street,
+        number: order.number,
+        neighborhood: order.neighborhood,
+        city: order.city,
+        state: order.state,
+        zipCode: order.zipCode,
+        complement: order.complement,
+      }
+    : null,
 });
 
 export const formatOrderPublicForApi = (order: any): OrderPublic => ({
