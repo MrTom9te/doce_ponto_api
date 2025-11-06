@@ -432,10 +432,11 @@ Content-Type: application/json
   "customerEmail": "joao.silva@email.com",
   "customerTaxId": "12345678901",
   "productId": "660e8400-e29b-41d4-a716-446655440001",
-  "quantity": 2,
+  "quantity": 1,
   "deliveryDate": "2025-10-15",
   "deliveryTime": "14h",
-  "address": {
+  "deliveryType": "DELIVERY", // ou "PICKUP"
+  "address": { // Obrigatório apenas se deliveryType for "DELIVERY"
     "street": "Rua das Flores",
     "number": "123",
     "neighborhood": "Centro",
@@ -462,11 +463,12 @@ Content-Type: application/json
     "customerTaxId": "12345678901",
     "productId": "660e8400-e29b-41d4-a716-446655440001",
     "productName": "Bolo de Chocolate",
-    "quantity": 2,
+    "quantity": 1,
     "unitPrice": 45.00,
-    "totalPrice": 90.00,
+    "totalPrice": 45.00,
     "deliveryDate": "2025-10-15",
     "deliveryTime": "14h",
+    "deliveryType": "DELIVERY",
     "address": {
       "street": "Rua das Flores",
       "number": "123",
@@ -488,17 +490,18 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "error": "Produto não encontrado ou inativo",
-  "code": "PRODUCT_NOT_AVAILABLE"
+  "error": "Endereço completo é obrigatório para o tipo de entrega 'DELIVERY'.",
+  "code": "INVALID_INPUT"
 }
 ```
 
 **Validações:**
+- `deliveryType`: Opcional. Se não enviado, o padrão é `DELIVERY`. Valores válidos: `DELIVERY`, `PICKUP`.
+- `address`: Obrigatório se `deliveryType` for `DELIVERY`.
 - CustomerName: obrigatório, 2-100 caracteres
 - CustomerPhone: obrigatório, 10-11 dígitos
 - CustomerEmail: obrigatório, formato de email válido
 - CustomerTaxId: obrigatório, 11 dígitos (CPF)
-- Address: obrigatório, deve conter `street`, `number`, `neighborhood`, `city`, `state`, `zipCode`
 - ProductId: obrigatório, deve existir e estar ativo
 - Quantity: obrigatório, deve ser >= 1
 - DeliveryDate: obrigatório, não pode ser data passada (formato YYYY-MM-DD)
@@ -536,11 +539,12 @@ Authorization: Bearer {token}
       "customerTaxId": "12345678901",
       "productId": "660e8400-e29b-41d4-a716-446655440001",
       "productName": "Bolo de Chocolate",
-      "quantity": 2,
+      "quantity": 1,
       "unitPrice": 45.00,
-      "totalPrice": 90.00,
+      "totalPrice": 45.00,
       "deliveryDate": "2025-10-15",
       "deliveryTime": "14h",
+      "deliveryType": "DELIVERY",
       "address": {
         "street": "Rua das Flores",
         "number": "123",
@@ -554,9 +558,30 @@ Authorization: Bearer {token}
       "status": "pending",
       "createdAt": "2025-10-11T16:30:00Z",
       "updatedAt": "2025-10-11T16:30:00Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "orderNumber": "PED-002",
+      "customerName": "Ana Costa",
+      "customerPhone": "5592988776655",
+      "customerEmail": "ana.costa@email.com",
+      "customerTaxId": "98765432109",
+      "productId": "660e8400-e29b-41d4-a716-446655440002",
+      "productName": "Bolo de Morango",
+      "quantity": 1,
+      "unitPrice": 50.00,
+      "totalPrice": 50.00,
+      "deliveryDate": "2025-10-16",
+      "deliveryTime": "10h",
+      "deliveryType": "PICKUP",
+      "address": null,
+      "observations": "",
+      "status": "confirmed",
+      "createdAt": "2025-10-12T11:00:00Z",
+      "updatedAt": "2025-10-12T11:30:00Z"
     }
   ],
-  "total": 1,
+  "total": 2,
   "page": 1
 }
 ```
@@ -589,11 +614,12 @@ Authorization: Bearer {token}
     "customerTaxId": "12345678901",
     "productId": "660e8400-e29b-41d4-a716-446655440001",
     "productName": "Bolo de Chocolate",
-    "quantity": 2,
+    "quantity": 1,
     "unitPrice": 45.00,
-    "totalPrice": 90.00,
+    "totalPrice": 45.00,
     "deliveryDate": "2025-10-15",
     "deliveryTime": "14h",
+    "deliveryType": "DELIVERY",
     "address": {
       "street": "Rua das Flores",
       "number": "123",
