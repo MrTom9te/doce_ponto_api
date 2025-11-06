@@ -18,6 +18,7 @@ import {
 } from "@/utils/format.utils";
 import { Prisma } from "@prisma/client";
 import { connect } from "net";
+import { abacate } from "@/services/abacate.service";
 
 const router = Router();
 
@@ -77,7 +78,7 @@ router.post(
   requireJsonContent,
   async (
     req: Request<{}, {}, CreateOrderRequest>,
-    res: Response<ApiResult<Order>>,
+    res: Response<ApiResult<Order & { paymentUrl?: string }>>,
   ) => {
     const {
       customerName,
@@ -152,7 +153,13 @@ router.post(
     try {
       const product = await prisma.product.findUnique({
         where: { id: productId, isActive: true },
-        select: { id: true, name: true, price: true, userId: true },
+        select: {
+          id: true,
+          name: true,
+          price: true,
+          userId: true,
+          description: true,
+        },
       });
 
       if (!product) {
@@ -192,12 +199,45 @@ router.post(
         },
       });
 
+      const billing = await abacate.billing.create({
+        frequency: "ONE_TIME",
+        methods: ["PIX"],
+        products: [
+          {
+            externalId: newOrder.id,
+            name: newOrder.productName,
+            quantity: orderQuantity,
+            price: Math.round(totalPrice * 100),
+            description: product.description,
+          },
+        ],
+        returnUrl: "http://localhost:3001/order-summary",
+        completionUrl: `http://localhost:3001/order/${newOrder.id}/success`,
+        customer: {
+          name: customerName,
+          email: "cliente@email.com",
+          cellphone: `+55${customerPhone}`,
+          taxId: "09240529020",
+        },
+      });
+
+      const updatedOrderWithPayment = await prisma.order.update({
+        where: { id: newOrder.id },
+        data: {
+          paymentProviderId: billing.data?.id,
+          paymentUrl: billing.data?.url,
+        },
+      });
+
       const formattedOrder = formatOrderForApi(newOrder);
 
       res.status(201).json({
         success: true,
         message: "Pedido criado com sucesso",
-        data: formattedOrder,
+        data: {
+          ...formattedOrder,
+          paymentUrl: billing.data?.url,
+        },
       });
     } catch (error) {
       console.log("Error ao criar pedido:", error);
