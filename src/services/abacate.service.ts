@@ -1,5 +1,6 @@
-import dotenv from "dotenv";
 import AbacatePay from "abacatepay-nodejs-sdk";
+import dotenv from "dotenv";
+
 dotenv.config();
 
 const abacatePayApiKey = process.env.ABACATE_PAY_ACCESS_KEY;
