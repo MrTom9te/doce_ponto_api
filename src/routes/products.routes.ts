@@ -332,7 +332,6 @@ router.delete(
       res.status(200).json({
         success: true,
         message: "Produto deletado com sucesso",
-        data: null,
       });
     } catch (error) {
       // This catch block will only handle errors from prisma.product.findUnique or prisma.product.delete
