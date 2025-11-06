@@ -83,13 +83,17 @@ router.post(
     const {
       customerName,
       customerPhone,
+      customerEmail,
+      customerTaxId,
       deliveryDate,
       deliveryTime,
       productId,
       quantity,
       observations,
+      address,
     } = req.body;
 
+    // --- VALIDAÇÕES ---
     if (!customerName || customerName.length < 2 || customerName.length > 100) {
       return res.status(400).json({
         success: false,
@@ -105,6 +109,32 @@ router.post(
         code: "INVALID_INPUT",
       });
     }
+    if (!customerEmail || !/^[\S]+@[\S]+\.[\S]+$/.test(customerEmail)) {
+      return res.status(400).json({
+        success: false,
+        error: "Email do cliente é obrigatório e deve ser válido",
+        code: "INVALID_INPUT",
+      });
+    }
+    if (!customerTaxId || !/^\d{11}$/.test(customerTaxId)) {
+      return res.status(400).json({
+        success: false,
+        error: "CPF do cliente é obrigatório e deve ter 11 dígitos",
+        code: "INVALID_INPUT",
+      });
+    }
+    if (
+      !address ||
+      typeof address !== "object" ||
+      !address.street ||
+      !address.city
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Endereço é obrigatório e deve conter pelo menos rua e cidade.",
+        code: "INVALID_INPUT",
+      });
+    }
     if (!productId || typeof productId !== "string") {
       return res.status(400).json({
         success: false,
@@ -113,7 +143,7 @@ router.post(
       });
     }
 
-    const orderQuantity = quantity && quantity >= 1 ? quantity : 1; // Ajuste para assumir 1 se não informado ou inválido
+    const orderQuantity = quantity && quantity >= 1 ? quantity : 1;
 
     if (!deliveryDate || !moment(deliveryDate, "YYYY-MM-DD", true).isValid()) {
       return res.status(400).json({
@@ -180,14 +210,23 @@ router.post(
           orderNumber: orderNumber,
           customerName: customerName,
           customerPhone: customerPhone,
+          customerEmail: customerEmail,
+          customerTaxId: customerTaxId,
           productName: product.name,
           quantity: orderQuantity,
           unitPrice: product.price,
-          totalPrice: Decimal(totalPrice),
+          totalPrice: new Decimal(totalPrice),
           deliveryDate: new Date(deliveryDate),
           deliveryTime: deliveryTime,
           observations: observations || "",
           status: "pending",
+          street: address.street,
+          number: address.number,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
+          zipCode: address.zipCode,
+          complement: address.complement,
           product: {
             connect: { id: product.id },
           },
@@ -215,9 +254,9 @@ router.post(
         completionUrl: `http://localhost:3001/order/${newOrder.id}/success`,
         customer: {
           name: customerName,
-          email: "cliente@email.com",
+          email: customerEmail,
           cellphone: `+55${customerPhone}`,
-          taxId: "09240529020",
+          taxId: customerTaxId,
         },
       });
 
@@ -229,7 +268,7 @@ router.post(
         },
       });
 
-      const formattedOrder = formatOrderForApi(newOrder);
+      const formattedOrder = formatOrderForApi(updatedOrderWithPayment);
 
       res.status(201).json({
         success: true,
