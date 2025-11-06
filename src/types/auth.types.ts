@@ -2,44 +2,80 @@
 
 import type { ApiResult } from "./api.types";
 
+/**
+ * Define a estrutura de dados para o registro de um novo usuário.
+ */
 export interface RegisterRequest {
-	name: string;
-	email: string;
-	password: string;
-	phone: string;
+  /** Nome completo do usuário. */
+  name: string;
+  /** Email para login, deve ser único. */
+  email: string;
+  /** Senha para login. */
+  password: string;
+  /** Telefone de contato do usuário. */
+  phone: string;
 }
 
+/**
+ * Define a estrutura de dados para a requisição de login.
+ */
 export interface LoginRequest {
-	email: string;
-	password: string;
+  /** Email do usuário cadastrado. */
+  email: string;
+  /** Senha do usuário. */
+  password: string;
 }
 
+/**
+ * Representa os dados públicos de um usuário autenticado.
+ */
 export interface User {
-	id: string;
-	name: string;
-	email: string;
-	phone: string;
-	createdAt?: string;
+  /** Identificador único do usuário (UUID). */
+  id: string;
+  /** Nome completo do usuário. */
+  name: string;
+  /** Email de contato e login. */
+  email: string;
+  /** Telefone de contato. */
+  phone: string;
+  /** Data de criação da conta (formato ISO 8601). */
+  createdAt?: string;
 }
 
+/**
+ * Representa os dados retornados no momento do login.
+ */
 export interface AuthData {
-	token: string;
-	user: {
-		id: string;
-		name: string;
-		email: string;
-		phone: string;
-	};
+  /** Token JWT para autorização de requisições subsequentes. */
+  token: string;
+  /** Objeto com os dados do usuário autenticado. */
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
 }
 
-// Sobrescreve ApiResponse pra auth
+/**
+ * Tipo específico para a resposta da API de autenticação.
+ */
 export type AuthResponse = ApiResult<AuthData>;
 
+/**
+ * (Frontend-specific) Define o contexto de autenticação para o app React.
+ */
 export interface AuthContext {
-	token: string | null;
-	user: User | null;
-	isLoading: boolean;
-	signIn: (credentials: LoginRequest) => Promise<void>;
-	signOut: () => Promise<void>;
-	signUp: (credentials: RegisterRequest) => Promise<void>;
+  /** O token JWT armazenado, ou nulo se não estiver logado. */
+  token: string | null;
+  /** O objeto do usuário logado, ou nulo. */
+  user: User | null;
+  /** `true` enquanto uma operação de autenticação está em andamento. */
+  isLoading: boolean;
+  /** Função para realizar o login. */
+  signIn: (credentials: LoginRequest) => Promise<void>;
+  /** Função para realizar o logout. */
+  signOut: () => Promise<void>;
+  /** Função para registrar um novo usuário. */
+  signUp: (credentials: RegisterRequest) => Promise<void>;
 }

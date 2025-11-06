@@ -3,3 +3,5 @@ node_modules
 .zed
 /src/generated/prisma
 public
+.env
+doce_ponto_test

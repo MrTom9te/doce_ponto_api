@@ -4,8 +4,8 @@
       "language_servers": [
         "typescript-language-server",
         "prisma-language-server",
-        "!vtsls",
-        "..."
+        "biome",
+        "!..."
       ]
     },
     "TSX": {
