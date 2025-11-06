@@ -51,6 +51,8 @@ model Order {
   orderNumber   String      @unique
   customerName  String
   customerPhone String
+  customerEmail String //email do usuario
+  customerTaxId String //por exemplo
   productName   String
   quantity      Int
   unitPrice     Decimal
@@ -60,8 +62,16 @@ model Order {
   observations  String?     @db.Text
   status        OrderStatus @default(pending)
 
+  street       String
+  number       String
+  neighborhood String
+  city         String
+  state        String
+  zipCode      String
+  complement   String?
+
   paymentProviderId String? @unique
-  paymentUrl String? @unique
+  paymentUrl        String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
