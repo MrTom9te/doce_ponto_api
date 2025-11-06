@@ -62,12 +62,14 @@ model Order {
   observations  String?     @db.Text
   status        OrderStatus @default(pending)
 
-  street       String
-  number       String
-  neighborhood String
-  city         String
-  state        String
-  zipCode      String
+  deliveryType DeliveryType @default(DELIVERY)
+
+  street       String?
+  number       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
   complement   String?
 
   paymentProviderId String? @unique
@@ -83,6 +85,11 @@ model Order {
   user   User   @relation(fields: [userId], references: [id])
 
   @@map("pedidos")
+}
+
+enum DeliveryType {
+  DELIVERY //entrega
+  PICKUP //buscar no local
 }
 
 enum OrderStatus {
