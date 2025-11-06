@@ -429,10 +429,21 @@ Content-Type: application/json
 {
   "customerName": "João Silva",
   "customerPhone": "5592999887766",
+  "customerEmail": "joao.silva@email.com",
+  "customerTaxId": "12345678901",
   "productId": "660e8400-e29b-41d4-a716-446655440001",
   "quantity": 2,
   "deliveryDate": "2025-10-15",
   "deliveryTime": "14h",
+  "address": {
+    "street": "Rua das Flores",
+    "number": "123",
+    "neighborhood": "Centro",
+    "city": "Manaus",
+    "state": "AM",
+    "zipCode": "69005010",
+    "complement": "Apto 4B"
+  },
   "observations": "Sem corante artificial, por favor"
 }
 ```
@@ -447,6 +458,8 @@ Content-Type: application/json
     "orderNumber": "PED-001",
     "customerName": "João Silva",
     "customerPhone": "5592999887766",
+    "customerEmail": "joao.silva@email.com",
+    "customerTaxId": "12345678901",
     "productId": "660e8400-e29b-41d4-a716-446655440001",
     "productName": "Bolo de Chocolate",
     "quantity": 2,
@@ -454,6 +467,15 @@ Content-Type: application/json
     "totalPrice": 90.00,
     "deliveryDate": "2025-10-15",
     "deliveryTime": "14h",
+    "address": {
+      "street": "Rua das Flores",
+      "number": "123",
+      "neighborhood": "Centro",
+      "city": "Manaus",
+      "state": "AM",
+      "zipCode": "69005010",
+      "complement": "Apto 4B"
+    },
     "observations": "Sem corante artificial, por favor",
     "status": "pending",
     "createdAt": "2025-10-11T16:30:00Z",
@@ -474,6 +496,9 @@ Content-Type: application/json
 **Validações:**
 - CustomerName: obrigatório, 2-100 caracteres
 - CustomerPhone: obrigatório, 10-11 dígitos
+- CustomerEmail: obrigatório, formato de email válido
+- CustomerTaxId: obrigatório, 11 dígitos (CPF)
+- Address: obrigatório, deve conter `street`, `number`, `neighborhood`, `city`, `state`, `zipCode`
 - ProductId: obrigatório, deve existir e estar ativo
 - Quantity: obrigatório, deve ser >= 1
 - DeliveryDate: obrigatório, não pode ser data passada (formato YYYY-MM-DD)
@@ -507,6 +532,8 @@ Authorization: Bearer {token}
       "orderNumber": "PED-001",
       "customerName": "João Silva",
       "customerPhone": "5592999887766",
+      "customerEmail": "joao.silva@email.com",
+      "customerTaxId": "12345678901",
       "productId": "660e8400-e29b-41d4-a716-446655440001",
       "productName": "Bolo de Chocolate",
       "quantity": 2,
@@ -514,6 +541,15 @@ Authorization: Bearer {token}
       "totalPrice": 90.00,
       "deliveryDate": "2025-10-15",
       "deliveryTime": "14h",
+      "address": {
+        "street": "Rua das Flores",
+        "number": "123",
+        "neighborhood": "Centro",
+        "city": "Manaus",
+        "state": "AM",
+        "zipCode": "69005010",
+        "complement": "Apto 4B"
+      },
       "observations": "Sem corante artificial, por favor",
       "status": "pending",
       "createdAt": "2025-10-11T16:30:00Z",
@@ -549,6 +585,8 @@ Authorization: Bearer {token}
     "orderNumber": "PED-001",
     "customerName": "João Silva",
     "customerPhone": "5592999887766",
+    "customerEmail": "joao.silva@email.com",
+    "customerTaxId": "12345678901",
     "productId": "660e8400-e29b-41d4-a716-446655440001",
     "productName": "Bolo de Chocolate",
     "quantity": 2,
@@ -556,6 +594,15 @@ Authorization: Bearer {token}
     "totalPrice": 90.00,
     "deliveryDate": "2025-10-15",
     "deliveryTime": "14h",
+    "address": {
+      "street": "Rua das Flores",
+      "number": "123",
+      "neighborhood": "Centro",
+      "city": "Manaus",
+      "state": "AM",
+      "zipCode": "69005010",
+      "complement": "Apto 4B"
+    },
     "observations": "Sem corante artificial, por favor",
     "status": "pending",
     "createdAt": "2025-10-11T16:30:00Z",
