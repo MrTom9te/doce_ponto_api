@@ -173,7 +173,17 @@ router.post(
   requireJsonContent,
   async (
     req: Request<{}, {}, CreateOrderRequest>,
-    res: Response<ApiResult<Order & { paymentUrl?: string }>>,
+    res: Response<
+      ApiResult<
+        Order & {
+          paymentPix?: {
+            qrCodeImage?: string;
+            qrCodeText?: string;
+            expiresAt?: string;
+          };
+        }
+      >
+    >,
   ) => {
     const {
       customerName,
@@ -303,7 +313,9 @@ router.post(
       const unitPrice = product.price.toNumber();
       const totalPrice = unitPrice * orderQuantity;
 
-      const orderNumber = `PED-${uuidV4().substring(0, 3).toUpperCase()}-${moment().format("'YYMMDDHHmmss'")}`;
+      const orderNumber = `PED-${uuidV4()
+        .substring(0, 3)
+        .toUpperCase()}-${moment().format("'YYMMDDHHmmss'")}`;
 
       // Prepara os dados do pedido
       const orderData: Prisma.OrderCreateInput = {
@@ -313,7 +325,7 @@ router.post(
         customerEmail,
         customerTaxId,
         productName: product.name,
-        quantity: orderQuantity,
+        quantity: Number(orderQuantity),
         unitPrice: product.price,
         totalPrice: new Decimal(totalPrice),
         deliveryDate: new Date(deliveryDate),
@@ -338,20 +350,10 @@ router.post(
 
       const newOrder = await prisma.order.create({ data: orderData });
 
-      const billing = await abacate.billing.create({
-        frequency: "ONE_TIME",
-        methods: ["PIX"],
-        products: [
-          {
-            externalId: newOrder.id,
-            name: newOrder.productName,
-            quantity: orderQuantity,
-            price: Math.round(totalPrice * 100),
-            description: product.description,
-          },
-        ],
-        returnUrl: "http://localhost:3001/order-summary",
-        completionUrl: `http://localhost:3001/order/${newOrder.id}/success`,
+      const pix = await abacate.pixQrCode.create({
+        amount: Math.round(totalPrice * 100),
+        description: `Pedido ${orderNumber} - ${product.name}`,
+        expiresIn: 3600, // 1 hour
         customer: {
           name: customerName,
           email: customerEmail,
@@ -360,11 +362,19 @@ router.post(
         },
       });
 
+      if (pix.error !== null) {
+        console.log("Error ao criar pedido:", pix.error);
+
+        return res.status(500).json({
+          success: false,
+          error: "Erro interno do servidor ao criar pedido",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
       const updatedOrderWithPayment = await prisma.order.update({
         where: { id: newOrder.id },
         data: {
-          paymentProviderId: billing.data?.id,
-          paymentUrl: billing.data?.url,
+          paymentProviderId: pix.data.id,
         },
       });
 
@@ -372,11 +382,21 @@ router.post(
 
       res.status(201).json({
         success: true,
-        message: "Pedido criado com sucesso",
+        message: "Pedido criado com sucesso, aguardando pagamento via PIX.",
         data: {
           ...formattedOrder,
-          paymentUrl: billing.data?.url,
+          paymentPix: {
+            qrCodeImage: pix.data?.brCodeBase64,
+            qrCodeText: pix.data?.brCode,
+            expiresAt: pix.data?.expiresAt,
+          },
         },
+      });
+      console.log("Error ao criar pedido:", "");
+      res.status(500).json({
+        success: false,
+        error: "Erro interno do servidor ao criar pedido",
+        code: "INTERNAL_SERVER_ERROR",
       });
     } catch (error) {
       console.log("Error ao criar pedido:", error);
