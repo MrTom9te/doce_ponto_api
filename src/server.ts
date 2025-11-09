@@ -1,4 +1,5 @@
 import path from "node:path";
+import os from "node:os";
 import express from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
@@ -38,17 +39,42 @@ app.use("/api/orders", ordersRouter);
 app.use("/api/public", publicRoutes);
 app.use("/api/payment", paymentsRouter);
 
-app.get("/", (_req, res) => {
-  res.json({ message: "Bem Vindo a Api Doce Ponto" });
-});
-
+// Sirva os arquivos estáticos da pasta de imagens
 app.use(
   "/static/images",
   express.static(path.join(__dirname, "..", "public", "images")),
 );
 
-const PORT = process.env.PORT || 3000;
+// --- Configuração para servir o SPA ---
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT} `);
+// 1. Define o caminho para a pasta de build do SPA
+const spaDistPath = path.join(__dirname, "..", "spa", "dist");
+
+// 2. Serve os arquivos estáticos (JS, CSS, imagens) do SPA
+app.use(express.static(spaDistPath));
+
+// 3. Rota catch-all: para qualquer outra requisição GET que não seja para a API,
+//    envia o `index.html` do SPA. Isso permite que o React Router controle as rotas.
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(spaDistPath, "index.html"));
+});
+
+const PORT = process.env.PORT || 3000;
+const HOST = "0.0.0.0";
+
+app.listen(Number(PORT), HOST, () => {
+  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+
+  try {
+    const networkInterfaces = os.networkInterfaces();
+    const ip = Object.values(networkInterfaces)
+      .flat()
+      .find((i) => i?.family === "IPv4" && !i.internal)?.address;
+
+    if (ip) {
+      console.log(`🔗 Disponível na rede em: http://${ip}:${PORT}`);
+    }
+  } catch (e) {
+    // ignore
+  }
 });
