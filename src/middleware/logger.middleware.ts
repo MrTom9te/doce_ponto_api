@@ -14,7 +14,7 @@ export function captureApiResult(
 ) {
   const originalJson = res.json.bind(res);
 
-  res.json = function (data: any) {
+  res.json = (data: any) => {
     // Armazena o ApiResult para os tokens do Morgan acessarem
     (res as any).__apiResult = data;
     return originalJson(data);
