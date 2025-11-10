@@ -8,8 +8,13 @@ import ordersRouter from "@/routes/order.routes";
 import paymentsRouter from "@/routes/payments.routes";
 import productsRouter from "@/routes/products.routes";
 import publicRoutes from "@/routes/public.routes";
+import { setupApiLogging } from "./middleware/logger.middleware";
 
 const app = express();
+// Setup do logging (antes das rotas!)
+setupApiLogging(app, {
+  format: process.env.NODE_ENV === "production" ? "json" : "dev",
+});
 
 const swaggerDocs = swaggerJsdoc({
   swaggerDefinition: {
@@ -74,7 +79,5 @@ app.listen(Number(PORT), HOST, () => {
     if (ip) {
       console.log(`🔗 Disponível na rede em: http://${ip}:${PORT}`);
     }
-  } catch (e) {
-    // ignore
-  }
+  } catch {}
 });
