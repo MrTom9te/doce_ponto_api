@@ -53,7 +53,7 @@ app.use(
 // --- Configuração para servir o SPA ---
 
 // 1. Define o caminho para a pasta de build do SPA
-const spaDistPath = path.join(__dirname, "..", "spa", "dist");
+const spaDistPath = path.join(__dirname, "dist");
 
 // 2. Serve os arquivos estáticos (JS, CSS, imagens) do SPA
 app.use(express.static(spaDistPath));
@@ -61,7 +61,7 @@ app.use(express.static(spaDistPath));
 // 3. Rota catch-all: para qualquer outra requisição GET que não seja para a API,
 //    envia o `index.html` do SPA. Isso permite que o React Router controle as rotas.
 app.get(/^(?!\/api).*/, (req, res) => {
-  res.sendFile(path.join(spaDistPath, "index.html"));
+  res.sendFile(path.join(spaDistPath, "dist", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
