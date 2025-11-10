@@ -1,20 +1,29 @@
 // ==================== PAGINAÇÃO ====================
 
-import type { ErrorResponse } from "./api.types";
+import type { BaseApiResponse, ErrorResponse } from "./api.types";
 
 /**
- * Representa uma resposta de sucesso para uma lista paginada de itens.
- * @template T O tipo de dado dos itens na lista.
+ * Interface para os metadados de paginação.
  */
-export interface PaginatedSuccessResponse<T> {
-  /** Indica que a operação foi bem-sucedida. */
-  success: boolean;
-  /** Um array com os objetos de dados da página atual. */
-  data: T[];
+interface PaginationMetaData {
   /** O número total de itens disponíveis no banco de dados para a consulta. */
   total: number;
   /** O número da página atual retornada. */
   page: number;
+}
+
+/**
+ * Representa uma resposta de sucesso para uma lista paginada de itens.
+ * Estende BaseApiResponse e inclui metadados de paginação.
+ * @template T O tipo de dado dos itens na lista.
+ */
+export interface PaginatedSuccessResponse<T>
+  extends BaseApiResponse,
+    PaginationMetaData {
+  /** Indica que a operação foi bem-sucedida. */
+  success: true; // Garante que seja um sucesso paginado
+  /** Um array com os objetos de dados da página atual. */
+  data: T[];
 }
 
 /**
