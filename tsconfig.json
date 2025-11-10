@@ -4,7 +4,7 @@
       "@/*": ["./src/*"]
     },
     "target": "ES2020",
-    "module": "ESNext", // ← ESM em vez de CommonJS
+    "module": "CommonJS", // ← ESM em vez de CommonJS
     "moduleResolution": "node",
     "lib": ["ES2020"],
     "outDir": "./dist",
@@ -17,6 +17,6 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules"]
 }
