@@ -18,6 +18,12 @@ import { isOrderStatus } from "@/utils/validators";
 const prisma = new PrismaClient();
 const router = Router();
 
+// Função auxiliar para obter a loja do usuário
+async function getStoreByUserId(userId: string) {
+  if (!userId) return null;
+  return prisma.store.findUnique({ where: { ownerId: userId } });
+}
+
 /**
  * @swagger
  * tags:
@@ -72,31 +78,38 @@ router.get(
     req: Request<{}, {}, {}, ListOrdersParams>,
     res: Response<PaginationResponse<Order>>,
   ) => {
-    const userId = req.userId;
-    const { page = 1, limit = 20, status } = req.query;
-
-    const skip = (Number(page) - 1) * Number(limit);
-    const take = Number(limit);
-
-    const whereClause: Prisma.OrderWhereInput = {
-      userId: userId,
-    };
-
-    if (status) {
-      if (isOrderStatus(status)) {
-        whereClause.status = status;
-      } else {
-        return res.status(400).json({
+    try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(404).json({
           success: false,
-          error: `Status inválido. Status válidos são: ${Object.values(
-            OrderStatus,
-          ).join(", ")}`,
-          code: "INVALID_INPUT",
+          error: "Loja não encontrada para este usuário.",
+          code: "STORE_NOT_FOUND",
         });
       }
-    }
 
-    try {
+      const { page = 1, limit = 20, status } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
+      const take = Number(limit);
+
+      const whereClause: Prisma.OrderWhereInput = {
+        storeId: store.id,
+      };
+
+      if (status) {
+        if (isOrderStatus(status)) {
+          whereClause.status = status;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: `Status inválido. Status válidos são: ${Object.values(
+              OrderStatus,
+            ).join(", ")}`,
+            code: "INVALID_INPUT",
+          });
+        }
+      }
+
       const orders = await prisma.order.findMany({
         where: whereClause,
         skip,
@@ -155,13 +168,21 @@ router.get(
   "/:id",
   authMiddleware,
   async (req: Request<{ id: string }>, res: Response<ApiResult<Order>>) => {
-    const { id } = req.params;
-    const userId = req.userId;
     try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(404).json({
+          success: false,
+          error: "Loja não encontrada para este usuário.",
+          code: "STORE_NOT_FOUND",
+        });
+      }
+
+      const { id } = req.params;
       const order = await prisma.order.findUnique({
         where: {
           id,
-          userId,
+          storeId: store.id,
         },
       });
 
@@ -231,41 +252,33 @@ router.patch(
     req: Request<{ id: string }, {}, UpdateOrderStatusRequest>,
     res: Response<ApiResult<Order>>,
   ) => {
-    const { id } = req.params;
-    const userId = req.userId;
-    const { status } = req.body;
-
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: "ID do pedido inválido",
-        code: "INVALID_INPUT",
-      });
-    }
-
-    if (id === "null") {
-      res.status(400).json({
-        success: false,
-        error: "paramentro null",
-        code: "NOT_NULL", // Código de erro específico da especificação
-      });
-    }
-
-    if (!isOrderStatus(status)) {
-      return res.status(400).json({
-        success: false,
-        error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(
-          OrderStatus,
-        ).join(", ")}`,
-        code: "INVALID_STATUS", // Código de erro específico da especificação
-      });
-    }
-
     try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(404).json({
+          success: false,
+          error: "Loja não encontrada para este usuário.",
+          code: "STORE_NOT_FOUND",
+        });
+      }
+
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!isOrderStatus(status)) {
+        return res.status(400).json({
+          success: false,
+          error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(
+            OrderStatus,
+          ).join(", ")}`,
+          code: "INVALID_STATUS",
+        });
+      }
+
       const updatedOrder = await prisma.order.update({
         where: {
           id,
-          userId,
+          storeId: store.id,
         },
         data: {
           status: status,
