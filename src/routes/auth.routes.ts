@@ -111,13 +111,29 @@ router.post(
       // O 'salt' é um fator de complexidade para o hash. 10 é um bom valor padrão.
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // --- 4. Criar o Usuário no Banco de Dados ---
+      // --- 4. Criar o Usuário e a Loja atomicamente ---
+      // Gerar um slug único para a loja a partir do nome do usuário
+      const baseSlug = name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      const uniqueSlug = `${baseSlug}-${Math.random()
+        .toString(36)
+        .substring(2, 8)}`;
+
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
-          password: hashedPassword, // Salva a senha criptografada
+          password: hashedPassword,
           phone,
+          // Nested write: cria a loja junto com o usuário
+          store: {
+            create: {
+              name: name, // O nome da loja é o nome do usuário por padrão
+              slug: uniqueSlug,
+            },
+          },
         },
       });
 
