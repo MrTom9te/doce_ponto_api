@@ -22,10 +22,43 @@ model User {
   phone     String
   createdAt DateTime @default(now())
 
+  store Store? // Um usuário pode ser dono de uma loja
+
+  @@map("users")
+}
+
+// NOVO MODELO PARA GERENCIAR CADA LOJA INDIVIDUALMENTE
+model Store {
+  id          String  @id @default(uuid())
+  name        String
+  slug        String  @unique // URL amigável, ex: "bolos-da-maria"
+  ownerId     String  @unique
+  owner       User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // --- Campos de Endereço da Loja ---
+  street       String?
+  number       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+  complement   String?
+
+  // --- Opções de Entrega da Loja ---
+  supportedDeliveryTypes DeliveryType[] @default([DELIVERY, PICKUP])
+
+  // Campos para a futura customização da loja
+  logoUrl     String?
+  themeColor  String? @default("#8A2BE2") // Um roxo como padrão
+  layoutStyle String? @default("grid")
+  fontFamily  String? @default("Inter")
+
   products Product[]
   orders   Order[]
 
-  @@map("users")
+  @@map("stores")
 }
 
 model Product {
@@ -38,8 +71,9 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // AGORA O PRODUTO PERTENCE A UMA LOJA
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   orders Order[]
 
@@ -51,8 +85,8 @@ model Order {
   orderNumber   String      @unique
   customerName  String
   customerPhone String
-  customerEmail String //email do usuario
-  customerTaxId String //por exemplo
+  customerEmail String
+  customerTaxId String
   productName   String
   quantity      Int
   unitPrice     Decimal
@@ -81,8 +115,9 @@ model Order {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  // AGORA O PEDIDO PERTENCE A UMA LOJA
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@map("pedidos")
 }
