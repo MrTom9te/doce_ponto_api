@@ -8,6 +8,7 @@ import ordersRouter from "@/routes/order.routes";
 import paymentsRouter from "@/routes/payments.routes";
 import productsRouter from "@/routes/products.routes";
 import publicRoutes from "@/routes/public.routes";
+import storeRouter from "@/routes/store.routes"; // Importa a nova rota
 import { setupApiLogging } from "./middleware/logger.middleware";
 
 const app = express();
@@ -43,6 +44,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/public", publicRoutes);
 app.use("/api/payment", paymentsRouter);
+app.use("/api/store", storeRouter); // Registra a nova rota
 
 // Sirva os arquivos estáticos da pasta de imagens
 app.use(
