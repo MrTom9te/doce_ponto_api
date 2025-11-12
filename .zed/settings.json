@@ -1,4 +1,15 @@
 {
+  "context_servers": {
+    "render": {
+      "command": "render-mcp-server",
+      "args": [],
+      "enabled": true,
+      "source": "custom",
+      "env": {
+        "RENDER_API_KEY": "rnd_hBxHMubNjQE5sqoqVJ3iA2uZ0PdU"
+      }
+    }
+  },
   "languages": {
     "TypeScript": {
       "language_servers": [
