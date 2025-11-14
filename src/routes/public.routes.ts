@@ -20,87 +20,6 @@ import { abacate } from "@/services/abacate.service";
 
 const router = Router();
 const prisma = new PrismaClient();
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     ProductPublic:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         name:
- *           type: string
- *         description:
- *           type: string
- *         price:
- *           type: number
- *         imageUrl:
- *           type: string
- *         createdAt:
- *           type: string
- *           format: date-time
- *     OrderPublic:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *         orderNumber:
- *           type: string
- *         customerName:
- *           type: string
- *         status:
- *           type: string
- *         deliveryDate:
- *           type: string
- *           format: date
- *         deliveryTime:
- *           type: string
- *         updatedAt:
- *           type: string
- *           format: date-time
- */
-
-/**
- * @swagger
- * tags:
- *   name: Público
- *   description: Endpoints acessíveis publicamente, sem necessidade de autenticação.
- */
-
-/**
- * @swagger
- * /public/products:
- *   get:
- *     summary: Lista os produtos ativos para a vitrine pública.
- *     tags: [Público]
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: O número da página.
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: O número de itens por página.
- *     responses:
- *       '200':
- *         description: Uma lista de produtos públicos.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/ProductPublic'
- */
 router.get(
   "/products",
   async (
@@ -149,25 +68,6 @@ router.get(
     }
   },
 );
-
-/**
- * @swagger
- * /public/orders:
- *   post:
- *     summary: Cria um novo pedido a partir do site público.
- *     tags: [Público]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/CreateOrderRequest'
- *     responses:
- *       '201':
- *         description: Pedido criado com sucesso. Retorna os dados do pedido e a URL de pagamento.
- *       '400':
- *         description: 'Erro de validação nos dados enviados (ex: endereço faltando para entrega).'
- */
 router.post(
   "/orders",
   requireJsonContent,
@@ -297,7 +197,7 @@ router.post(
           id: true,
           name: true,
           price: true,
-          userId: true,
+          storeId: true,
           description: true,
         },
       });
@@ -334,7 +234,7 @@ router.post(
         status: "pending",
         deliveryType,
         product: { connect: { id: product.id } },
-        user: { connect: { id: product.userId } },
+        store: { connect: { id: product.storeId } },
       };
 
       // Adiciona o endereço apenas se for entrega
@@ -392,12 +292,6 @@ router.post(
           },
         },
       });
-      console.log("Error ao criar pedido:", "");
-      res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor ao criar pedido",
-        code: "INTERNAL_SERVER_ERROR",
-      });
     } catch (error) {
       console.log("Error ao criar pedido:", error);
       res.status(500).json({
@@ -408,30 +302,6 @@ router.post(
     }
   },
 );
-
-/**
- * @swagger
- * /public/orders/{id}:
- *   get:
- *     summary: Consulta o status público de um pedido.
- *     tags: [Público]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID ou o número do pedido (orderNumber).
- *     responses:
- *       '200':
- *         description: O status público do pedido.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/OrderPublic'
- *       '404':
- *         description: Pedido não encontrado.
- */
 router.get(
   "/orders/:id",
 

@@ -1,0 +1,60 @@
+paths:
+  /public/products:
+    get:
+      tags: [Público]
+      summary: Lista os produtos ativos para a vitrine pública.
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+          description: O número da página.
+        - in: query
+          name: limit
+          schema: { type: integer }
+          description: O número de itens por página.
+      responses:
+        "200":
+          description: Uma lista de produtos públicos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProductPublic"
+
+  /public/orders:
+    post:
+      tags: [Público]
+      summary: Cria um novo pedido a partir do site público.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Pedido criado com sucesso. Retorna os dados do pedido e a URL de pagamento.
+        "400":
+          description: "Erro de validação nos dados enviados (ex: endereço faltando para entrega)."
+
+  /public/orders/{id}:
+    get:
+      tags: [Público]
+      summary: Consulta o status público de um pedido.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID ou o número do pedido (orderNumber).
+      responses:
+        "200":
+          description: O status público do pedido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderPublic"
+        "404":
+          description: Pedido não encontrado.

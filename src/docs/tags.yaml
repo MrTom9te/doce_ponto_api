@@ -1,0 +1,11 @@
+tags:
+  - name: Autenticação
+    description: Endpoints de registro e login de usuários
+  - name: Produtos
+    description: Endpoints para gerenciamento de produtos (requer autenticação)
+  - name: Público
+    description: Endpoints acessíveis publicamente, sem necessidade de autenticação.
+  - name: Loja
+    description: Endpoints para gerenciar as configurações da loja da confeiteira.
+  - name: Pedidos (Gerenciamento)
+    description: Endpoints para a confeiteira gerenciar os pedidos recebidos.

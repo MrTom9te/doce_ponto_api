@@ -63,3 +63,31 @@ O trabalho realizado estabeleceu uma base sólida, mas o potencial do Doce Ponto
 *   **Criação de um Aplicativo Unificado:** A proposta mais poderosa é o desenvolvimento de um único aplicativo móvel (React Native) que atenda tanto às confeiteiras quanto aos clientes, usando um sistema de papéis (`BAKER`/`CLIENT`) para adaptar a interface. Isso centralizaria a manutenção e abriria portas para funcionalidades avançadas como notificações push, programas de fidelidade e uma experiência de compra ainda mais rica.
 
 Concluo este relato com a certeza de que o projeto Doce Ponto não apenas contribuiu para a sustentabilidade de um negócio local, mas também proporcionou uma experiência de aprendizado prático inestimável, conectando a teoria da sala de aula com os desafios do mundo real.
+
+## 6. Relato da Implementação da Tela “Personalizar Loja” (App Mobile)
+
+### Introdução/Contexto
+Na etapa mais recente, trabalhei na criação e integração da tela “Personalizar Loja” dentro do aplicativo mobile. A ideia foi dar à confeiteira um lugar simples para ajustar nome, URL (slug), endereço, opções de entrega, aparência (cor do tema, fonte) e o logo da sua vitrine. Essa entrega conecta diretamente o que a API já oferece com uma experiência prática para quem usa o app no dia a dia.
+
+### Objetivos
+- Permitir que a confeiteira edite as informações da loja com poucos toques.
+- Garantir que as mudanças sejam salvas na API e reflitam no site público.
+- Manter a experiência simples, sem telas complexas ou passos desnecessários.
+
+### Metodologia (Como fiz)
+1. Li a documentação da API e confirmei os campos de `GET /store` e `PATCH /store` (nome, slug, endereço, `supportedDeliveryTypes`, `themeColor`, `layoutStyle`, `fontFamily`, `logoUrl`).
+2. Criei tipos simples no frontend para padronizar os dados da loja.
+3. Criei um hook leve (`useStore`) para buscar e salvar as informações, seguindo o padrão dos outros hooks do projeto.
+4. Refatorei a tela para consumir a API real (removendo mocks) e mapear os campos na interface.
+5. Implementei um seletor de cor e de fonte bem simples (botões diretos), e o upload do logo via galeria (base64), sem complicar.
+6. Tratei o erro de slug duplicado com uma mensagem clara, e deixei um botão “Tentar novamente” em caso de falha de carregamento.
+
+### Resultados e Discussão
+- A tela agora carrega os dados reais da loja e salva as alterações com feedback imediato.
+- As opções de entrega viraram dois interruptores (delivery/retirada), que são convertidos para a lista `supportedDeliveryTypes` na hora de salvar.
+- O layout de produtos pode ser alternado entre “Grade” e “Lista”, mapeando para `grid/list` na API.
+- O envio do logo funciona por base64 quando a imagem é alterada; após salvar, a tela já exibe o `logoUrl` retornado pela API.
+- O fluxo ficou direto: abrir tela → ajustar dados → salvar → ver confirmação. Simples e objetivo, como a cliente precisa.
+
+### Reflexão/Conclusão
+Foi uma entrega que parece pequena, mas que dá autonomia real para a confeiteira. Percebi que, ao evitar telas ou componentes muito complexos, a experiência melhora: menos cliques, menos dúvidas, mais resultado. O principal aprendizado aqui foi equilibrar “capricho técnico” com “simplicidade de uso”. E ver a mudança refletindo no site público logo após salvar trouxe a sensação de sistema vivo e conectado — exatamente o espírito do Doce Ponto.

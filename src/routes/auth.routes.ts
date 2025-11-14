@@ -12,51 +12,6 @@ import type {
 const prisma = new PrismaClient();
 const router = Router();
 
-/**
- * @swagger
- * tags:
- *   name: Autenticação
- *   description: Endpoints de registro e login de usuários
- */
-
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Registra uma nova confeiteira.
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *               - phone
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Maria Silva"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "maria@confeitaria.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 example: "Senha123!"
- *               phone:
- *                 type: string
- *                 example: "5592999887766"
- *     responses:
- *       '201':
- *         description: Usuário registrado com sucesso.
- *       '400':
- *         description: 'Erro de validação (ex: email duplicado, senha fraca).'
- */
 router.post(
   "/register",
   async (req: Request<{}, {}, RegisterRequest>, res: Response) => {
@@ -163,36 +118,6 @@ router.post(
   },
 );
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Autentica a confeiteira e retorna um token JWT.
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "maria@confeitaria.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 example: "Senha123!"
- *     responses:
- *       '200':
- *         description: Login realizado com sucesso. Retorna o token e os dados do usuário.
- *       '401':
- *         description: Email ou senha incorretos.
- */
 router.post(
   "/login",
   async (
