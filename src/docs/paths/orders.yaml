@@ -1,0 +1,86 @@
+paths:
+  /orders:
+    get:
+      tags: [Pedidos (Gerenciamento)]
+      summary: Lista todos os pedidos recebidos pela confeiteira.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+          description: O número da página.
+        - in: query
+          name: limit
+          schema: { type: integer }
+          description: O número de itens por página.
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, confirmed, production, ready, delivered, cancelled]
+          description: Filtra pedidos por um status específico.
+      responses:
+        "200":
+          description: Uma lista paginada de pedidos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+
+  /orders/{id}:
+    get:
+      tags: [Pedidos (Gerenciamento)]
+      summary: Obtém os detalhes de um pedido específico.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do pedido.
+      responses:
+        "200":
+          description: Detalhes do pedido.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "404":
+          description: Pedido não encontrado.
+
+  /orders/{id}/status:
+    patch:
+      tags: [Pedidos (Gerenciamento)]
+      summary: Atualiza o status de um pedido.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do pedido a ser atualizado.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, production, ready, delivered, cancelled]
+                  description: O novo status do pedido.
+      responses:
+        "200":
+          description: Status do pedido atualizado com sucesso.
+        "400":
+          description: Status inválido.
+        "404":
+          description: Pedido não encontrado.

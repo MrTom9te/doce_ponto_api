@@ -27,99 +27,6 @@ async function getStoreByUserId(userId: string) {
   if (!userId) return null;
   return prisma.store.findUnique({ where: { ownerId: userId } });
 }
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Product:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           description: O ID do produto.
- *           example: "660e8400-e29b-41d4-a716-446655440001"
- *         name:
- *           type: string
- *           description: O nome do produto.
- *           example: "Bolo de Chocolate"
- *         description:
- *           type: string
- *           description: A descrição do produto.
- *           example: "Delicioso bolo de chocolate com cobertura cremosa"
- *         price:
- *           type: number
- *           format: float
- *           description: O preço do produto.
- *           example: 45.50
- *         imageUrl:
- *           type: string
- *           description: A URL da imagem do produto.
- *           example: "http://localhost:3000/static/images/produto-1.jpg"
- *         isActive:
- *           type: boolean
- *           description: Indica se o produto está ativo para venda.
- *           example: true
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: A data de criação do produto.
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: A data da última atualização do produto.
- */
-
-/**
- * @swagger
- * tags:
- *   name: Produtos
- *   description: Endpoints para gerenciamento de produtos (requer autenticação).
- */
-
-/**
- * @swagger
- * /products:
- *   get:
- *     summary: Lista todos os produtos da confeiteira autenticada.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: O número da página para paginação.
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: O número de itens por página.
- *       - in: query
- *         name: active
- *         schema:
- *           type: boolean
- *         description: Filtra produtos por status de ativação.
- *     responses:
- *       '200':
- *         description: Uma lista de produtos.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Product'
- *                 total:
- *                   type: integer
- *                 page:
- *                   type: integer
- */
 router.get(
   "/",
   authMiddleware,
@@ -170,32 +77,6 @@ router.get(
     }
   },
 );
-
-/**
- * @swagger
- * /products/{id}:
- *   get:
- *     summary: Obtém os detalhes de um produto específico.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do produto.
- *     responses:
- *       '200':
- *         description: Detalhes do produto.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
- *       '404':
- *         description: Produto não encontrado.
- */
 router.get(
   "/:id",
   authMiddleware,
@@ -241,40 +122,6 @@ router.get(
     }
   },
 );
-
-/**
- * @swagger
- * /products:
- *   post:
- *     summary: Cria um novo produto.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               price:
- *                 type: number
- *               imageBase64:
- *                 type: string
- *                 format: byte
- *                 description: 'Imagem do produto em formato Base64.'
- *     responses:
- *       '201':
- *         description: Produto criado com sucesso.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
- */
 router.post(
   "/",
   authMiddleware,
@@ -332,50 +179,6 @@ router.post(
     }
   },
 );
-
-/**
- * @swagger
- * /products/{id}:
- *   put:
- *     summary: Atualiza um produto existente.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do produto.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               price:
- *                 type: number
- *               imageBase64:
- *                 type: string
- *                 format: byte
- *               isActive:
- *                 type: boolean
- *     responses:
- *       '200':
- *         description: Produto atualizado com sucesso.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
- *       '404':
- *         description: Produto não encontrado.
- */
 router.put(
   "/:id",
   authMiddleware,
@@ -462,28 +265,6 @@ router.put(
     }
   },
 );
-
-/**
- * @swagger
- * /products/{id}:
- *   delete:
- *     summary: Deleta um produto permanentemente.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do produto.
- *     responses:
- *       '200':
- *         description: Produto deletado com sucesso.
- *       '404':
- *         description: Produto não encontrado.
- */
 router.delete(
   "/:id",
   authMiddleware,
@@ -534,41 +315,6 @@ router.delete(
     }
   },
 );
-
-/**
- * @swagger
- * /products/{id}/toggle:
- *   patch:
- *     summary: Ativa ou desativa um produto.
- *     tags: [Produtos]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do produto.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               isActive:
- *                 type: boolean
- *     responses:
- *       '200':
- *         description: Status do produto atualizado.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
- *       '404':
- *         description: Produto não encontrado.
- */
 router.patch(
   "/:id/toggle",
   authMiddleware,

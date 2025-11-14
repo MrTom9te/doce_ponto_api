@@ -267,17 +267,6 @@ Authorization: Bearer {token}
 }
 ```
 
-**Response (400 Bad Request):**
-```json
-{
-  "success": false,
-  "error": "Esta URL da loja já está em uso.",
-  "code": "DUPLICATE_SLUG"
-}
-```
-
----
-
 ## 4. Pedidos
 
 ### 4.1 - Criar Pedido (Público)

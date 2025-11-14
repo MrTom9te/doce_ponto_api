@@ -1,0 +1,169 @@
+paths:
+  /products:
+    get:
+      tags: [Produtos]
+      summary: Lista todos os produtos da confeiteira autenticada.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+          description: O número da página para paginação.
+        - in: query
+          name: limit
+          schema: { type: integer }
+          description: O número de itens por página.
+        - in: query
+          name: active
+          schema: { type: boolean }
+          description: Filtra por produtos ativos.
+      responses:
+        "200":
+          description: Lista de produtos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      tags: [Produtos]
+      summary: Cria um novo produto.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                imageBase64:
+                  type: string
+                  format: byte
+                  description: Imagem do produto em formato Base64.
+      responses:
+        "201":
+          description: Produto criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      tags: [Produtos]
+      summary: Obtém os detalhes de um produto específico.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do produto.
+      responses:
+        "200":
+          description: Detalhes do produto.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Produto não encontrado.
+    put:
+      tags: [Produtos]
+      summary: Atualiza um produto existente.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do produto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                imageBase64:
+                  type: string
+                  format: byte
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Produto atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Produto não encontrado.
+    delete:
+      tags: [Produtos]
+      summary: Deleta um produto permanentemente.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do produto.
+      responses:
+        "200":
+          description: Produto deletado com sucesso.
+        "404":
+          description: Produto não encontrado.
+
+  /products/{id}/toggle:
+    patch:
+      tags: [Produtos]
+      summary: Ativa ou desativa um produto.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: O ID do produto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Status do produto atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Produto não encontrado.
