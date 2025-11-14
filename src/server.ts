@@ -3,6 +3,7 @@ import os from "node:os";
 import express from "express";
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import swaggerOptions from "./swagger.config";
 import authRouter from "@/routes/auth.routes";
 import ordersRouter from "@/routes/order.routes";
 import paymentsRouter from "@/routes/payments.routes";
@@ -16,25 +17,7 @@ const app = express();
 setupApiLogging(app, {
   format: process.env.NODE_ENV === "production" ? "json" : "dev",
 });
-
-const swaggerDocs = swaggerJsdoc({
-  swaggerDefinition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Doce Ponto API",
-      version: "1.0.0",
-      description:
-        "Documentação da API para o sistema de confeitaria Doce Ponto, gerada automaticamente.",
-    },
-    servers: [
-      {
-        url: "http://localhost:3000/api", // URL base da sua API
-      },
-    ],
-  },
-
-  apis: ["./src/routes/*.ts"],
-});
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use(express.json());
