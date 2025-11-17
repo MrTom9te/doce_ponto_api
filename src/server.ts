@@ -11,8 +11,9 @@ import productsRouter from "@/routes/products.routes";
 import publicRoutes from "@/routes/public.routes";
 import storeRouter from "@/routes/store.routes"; // Importa a nova rota
 import { setupApiLogging } from "./middleware/logger.middleware";
-
+import cors from "cors";
 const app = express();
+app.use(cors());
 // Setup do logging (antes das rotas!)
 setupApiLogging(app, {
   format: process.env.NODE_ENV === "production" ? "json" : "dev",
