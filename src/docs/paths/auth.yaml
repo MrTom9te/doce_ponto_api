@@ -19,7 +19,7 @@ paths:
                   format: email
                   example: "maria@confeitaria.com"
                 password:
-                  type: string
+                  type: string 
                   format: password
                   example: "Senha123!"
                 phone:
