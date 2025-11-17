@@ -25,6 +25,55 @@ paths:
                 phone:
                   type: string
                   example: "92999887766"
+                store:
+                  type: object
+                  description: "Dados opcionais da loja a serem criados junto com o usuário."
+                  properties:
+                    name:
+                      type: string
+                      example: "Confeitaria da Maria"
+                    slug:
+                      type: string
+                      example: "confeitaria-da-maria"
+                    themeColor:
+                      type: string
+                      example: "#ff69b4"
+                    layoutStyle:
+                      type: string
+                      example: "classic"
+                    fontFamily:
+                      type: string
+                      example: "Inter"
+                    street:
+                      type: string
+                      example: "Rua A"
+                    number:
+                      type: string
+                      example: "123"
+                    neighborhood:
+                      type: string
+                      example: "Centro"
+                    city:
+                      type: string
+                      example: "Manaus"
+                    state:
+                      type: string
+                      example: "AM"
+                    zipCode:
+                      type: string
+                      example: "69000-000"
+                    complement:
+                      type: string
+                      example: "Casa 2"
+                    supportedDeliveryTypes:
+                      type: array
+                      items:
+                        type: string
+                        enum: [DELIVERY, PICKUP]
+                    imageBase64:
+                      type: string
+                      format: byte
+                      description: "Logo da loja em Base64 (opcional)."
       responses:
         "201":
           description: Usuário registrado com sucesso.
