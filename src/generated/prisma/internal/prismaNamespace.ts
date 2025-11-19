@@ -393,7 +393,8 @@ export const ModelName = {
   User: 'User',
   Store: 'Store',
   Product: 'Product',
-  Order: 'Order'
+  Order: 'Order',
+  AnonymousSession: 'AnonymousSession'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "store" | "product" | "order"
+    modelProps: "user" | "store" | "product" | "order" | "anonymousSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -709,6 +710,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AnonymousSession: {
+      payload: Prisma.$AnonymousSessionPayload<ExtArgs>
+      fields: Prisma.AnonymousSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnonymousSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnonymousSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.AnonymousSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnonymousSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        findMany: {
+          args: Prisma.AnonymousSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        create: {
+          args: Prisma.AnonymousSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        createMany: {
+          args: Prisma.AnonymousSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnonymousSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.AnonymousSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        update: {
+          args: Prisma.AnonymousSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnonymousSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnonymousSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnonymousSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnonymousSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.AnonymousSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnonymousSession>
+        }
+        groupBy: {
+          args: Prisma.AnonymousSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnonymousSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnonymousSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnonymousSessionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -778,7 +853,10 @@ export const StoreScalarFieldEnum = {
   logoUrl: 'logoUrl',
   themeColor: 'themeColor',
   layoutStyle: 'layoutStyle',
-  fontFamily: 'fontFamily'
+  fontFamily: 'fontFamily',
+  isActive: 'isActive',
+  isOpen: 'isOpen',
+  openingHours: 'openingHours'
 } as const
 
 export type StoreScalarFieldEnum = (typeof StoreScalarFieldEnum)[keyof typeof StoreScalarFieldEnum]
@@ -827,10 +905,24 @@ export const OrderScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   productId: 'productId',
-  storeId: 'storeId'
+  storeId: 'storeId',
+  anonId: 'anonId',
+  orderAccessCode: 'orderAccessCode'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const AnonymousSessionScalarFieldEnum = {
+  id: 'id',
+  tokenVersion: 'tokenVersion',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  lastSeen: 'lastSeen',
+  revoked: 'revoked'
+} as const
+
+export type AnonymousSessionScalarFieldEnum = (typeof AnonymousSessionScalarFieldEnum)[keyof typeof AnonymousSessionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -841,12 +933,29 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 export const NullsOrder = {
@@ -906,6 +1015,27 @@ export type EnumDeliveryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'Decimal'
  */
 export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -916,13 +1046,6 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -1058,6 +1181,7 @@ export type GlobalOmitConfig = {
   store?: Prisma.StoreOmit
   product?: Prisma.ProductOmit
   order?: Prisma.OrderOmit
+  anonymousSession?: Prisma.AnonymousSessionOmit
 }
 
 /* Types for Logging */

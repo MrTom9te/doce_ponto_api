@@ -62,3 +62,8 @@ export type Product = Prisma.ProductModel
  * 
  */
 export type Order = Prisma.OrderModel
+/**
+ * Model AnonymousSession
+ * 
+ */
+export type AnonymousSession = Prisma.AnonymousSessionModel
