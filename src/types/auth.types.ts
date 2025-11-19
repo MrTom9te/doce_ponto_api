@@ -2,6 +2,26 @@
 
 import type { ApiResult } from "./api.types";
 
+export type DeliveryTypeLiteral = "DELIVERY" | "PICKUP";
+
+export interface RegisterStoreData {
+  name?: string;
+  slug?: string;
+  logoUrl?: string;
+  themeColor?: string;
+  layoutStyle?: string;
+  fontFamily?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  complement?: string;
+  supportedDeliveryTypes?: DeliveryTypeLiteral[];
+  imageBase64?: string;
+}
+
 /**
  * Define a estrutura de dados para o registro de um novo usuário.
  */
@@ -14,6 +34,8 @@ export interface RegisterRequest {
   password: string;
   /** Telefone de contato do usuário. */
   phone: string;
+  /** Dados opcionais para criar a loja junto com o usuário. */
+  store?: RegisterStoreData;
 }
 
 /**

@@ -1,0 +1,180 @@
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        name:
+          type: string
+          example: "Bolo de Chocolate"
+        description:
+          type: string
+          example: "Delicioso bolo de chocolate com cobertura cremosa"
+        price:
+          type: number
+          format: float
+          example: 45.5
+        imageUrl:
+          type: string
+          example: "http://localhost:3000/static/images/produto-1.jpg"
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProductPublic:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        imageUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerTaxId:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        totalPrice:
+          type: number
+        deliveryDate:
+          type: string
+          format: date
+        deliveryTime:
+          type: string
+        deliveryType:
+          type: string
+          enum: [DELIVERY, PICKUP]
+        status:
+          type: string
+          enum: [pending, confirmed, production, ready, delivered, cancelled]
+        street:
+          type: string
+        number:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        complement:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderPublic:
+      type: object
+      properties:
+        id:
+          type: string
+        orderNumber:
+          type: string
+        customerName:
+          type: string
+        status:
+          type: string
+        deliveryDate:
+          type: string
+          format: date
+        deliveryTime:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateOrderRequest:
+      type: object
+      required:
+        - customerName
+        - customerPhone
+        - customerEmail
+        - customerTaxId
+        - deliveryDate
+        - deliveryTime
+        - productId
+      properties:
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        customerEmail:
+          type: string
+          format: email
+        customerTaxId:
+          type: string
+        deliveryDate:
+          type: string
+          format: date
+        deliveryTime:
+          type: string
+          description: "Formato '14h' ou '14h30'"
+        productId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+          default: 1
+        observations:
+          type: string
+          maxLength: 500
+        deliveryType:
+          type: string
+          enum: [DELIVERY, PICKUP]
+          default: DELIVERY
+        address:
+          type: object
+          properties:
+            street:
+              type: string
+            number:
+              type: string
+            neighborhood:
+              type: string
+            city:
+              type: string
+            state:
+              type: string
+            zipCode:
+              type: string
+            complement:
+              type: string

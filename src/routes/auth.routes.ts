@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { type Request, type Response, Router } from "express";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@/generated/prisma/client";
+import { requireJsonContent } from "@/middleware/auth.middleware";
 import type { ApiResult } from "@/types/api.types";
 import type {
   AuthData,
@@ -12,56 +13,12 @@ import type {
 const prisma = new PrismaClient();
 const router = Router();
 
-/**
- * @swagger
- * tags:
- *   name: Autenticação
- *   description: Endpoints de registro e login de usuários
- */
-
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Registra uma nova confeiteira.
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *               - phone
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Maria Silva"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "maria@confeitaria.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 example: "Senha123!"
- *               phone:
- *                 type: string
- *                 example: "5592999887766"
- *     responses:
- *       '201':
- *         description: Usuário registrado com sucesso.
- *       '400':
- *         description: 'Erro de validação (ex: email duplicado, senha fraca).'
- */
 router.post(
   "/register",
+  requireJsonContent,
   async (req: Request<{}, {}, RegisterRequest>, res: Response) => {
     try {
-      const { name, email, password, phone } = req.body;
+      const { name, email, password, phone } = (req.body || {}) as RegisterRequest;
 
       // --- 1. Validação de Entrada ---
       if (!name || !email || !password || !phone) {
@@ -111,12 +68,12 @@ router.post(
       // O 'salt' é um fator de complexidade para o hash. 10 é um bom valor padrão.
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // --- 4. Criar o Usuário no Banco de Dados ---
+      // --- 4. Criar apenas o Usuário (sem criar loja automaticamente) ---
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
-          password: hashedPassword, // Salva a senha criptografada
+          password: hashedPassword,
           phone,
         },
       });
@@ -147,44 +104,15 @@ router.post(
   },
 );
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Autentica a confeiteira e retorna um token JWT.
- *     tags: [Autenticação]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "maria@confeitaria.com"
- *               password:
- *                 type: string
- *                 format: password
- *                 example: "Senha123!"
- *     responses:
- *       '200':
- *         description: Login realizado com sucesso. Retorna o token e os dados do usuário.
- *       '401':
- *         description: Email ou senha incorretos.
- */
 router.post(
   "/login",
+  requireJsonContent,
   async (
     req: Request<{}, {}, LoginRequest>,
     res: Response<ApiResult<AuthData>>,
   ) => {
     try {
-      const { email, password } = req.body;
+      const { email, password } = (req.body || {}) as LoginRequest;
 
       // 1. Validação de entrada básica
       if (!email || !password) {

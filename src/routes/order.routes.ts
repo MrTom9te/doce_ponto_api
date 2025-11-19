@@ -18,53 +18,11 @@ import { isOrderStatus } from "@/utils/validators";
 const prisma = new PrismaClient();
 const router = Router();
 
-/**
- * @swagger
- * tags:
- *   name: Pedidos (Gerenciamento)
- *   description: Endpoints para a confeiteira gerenciar os pedidos recebidos.
- */
-
-/**
- * @swagger
- * /orders:
- *   get:
- *     summary: Lista todos os pedidos recebidos pela confeiteira.
- *     tags: [Pedidos (Gerenciamento)]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: O número da página.
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: O número de itens por página.
- *       - in: query
- *         name: status
- *         schema:
- *           type: string
- *           enum: [pending, confirmed, production, ready, delivered, cancelled]
- *         description: Filtra pedidos por um status específico.
- *     responses:
- *       '200':
- *         description: Uma lista paginada de pedidos.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Order'
- */
+// Função auxiliar para obter a loja do usuário
+async function getStoreByUserId(userId: string) {
+  if (!userId) return null;
+  return prisma.store.findUnique({ where: { ownerId: userId } });
+}
 router.get(
   "/",
   authMiddleware,
@@ -72,31 +30,38 @@ router.get(
     req: Request<{}, {}, {}, ListOrdersParams>,
     res: Response<PaginationResponse<Order>>,
   ) => {
-    const userId = req.userId;
-    const { page = 1, limit = 20, status } = req.query;
-
-    const skip = (Number(page) - 1) * Number(limit);
-    const take = Number(limit);
-
-    const whereClause: Prisma.OrderWhereInput = {
-      userId: userId,
-    };
-
-    if (status) {
-      if (isOrderStatus(status)) {
-        whereClause.status = status;
-      } else {
-        return res.status(400).json({
+    try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(403).json({
           success: false,
-          error: `Status inválido. Status válidos são: ${Object.values(
-            OrderStatus,
-          ).join(", ")}`,
-          code: "INVALID_INPUT",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
         });
       }
-    }
 
-    try {
+      const { page = 1, limit = 20, status } = req.query;
+      const skip = (Number(page) - 1) * Number(limit);
+      const take = Number(limit);
+
+      const whereClause: Prisma.OrderWhereInput = {
+        storeId: store.id,
+      };
+
+      if (status) {
+        if (isOrderStatus(status)) {
+          whereClause.status = status;
+        } else {
+          return res.status(400).json({
+            success: false,
+            error: `Status inválido. Status válidos são: ${Object.values(
+              OrderStatus,
+            ).join(", ")}`,
+            code: "INVALID_INPUT",
+          });
+        }
+      }
+
       const orders = await prisma.order.findMany({
         where: whereClause,
         skip,
@@ -125,43 +90,32 @@ router.get(
     }
   },
 );
-
-/**
- * @swagger
- * /orders/{id}:
- *   get:
- *     summary: Obtém os detalhes de um pedido específico.
- *     tags: [Pedidos (Gerenciamento)]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do pedido.
- *     responses:
- *       '200':
- *         description: Detalhes do pedido.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Order'
- *       '404':
- *         description: Pedido não encontrado.
- */
 router.get(
   "/:id",
   authMiddleware,
   async (req: Request<{ id: string }>, res: Response<ApiResult<Order>>) => {
-    const { id } = req.params;
-    const userId = req.userId;
     try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(403).json({
+          success: false,
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
+        });
+      }
+      if (!store.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: "A loja do usuário está inativa.",
+          code: "STORE_INACTIVE",
+        });
+      }
+
+      const { id } = req.params;
       const order = await prisma.order.findUnique({
         where: {
           id,
-          userId,
+          storeId: store.id,
         },
       });
 
@@ -188,41 +142,6 @@ router.get(
     }
   },
 );
-
-/**
- * @swagger
- * /orders/{id}/status:
- *   patch:
- *     summary: Atualiza o status de um pedido.
- *     tags: [Pedidos (Gerenciamento)]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: O ID do pedido a ser atualizado.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [pending, confirmed, production, ready, delivered, cancelled]
- *                 description: O novo status do pedido.
- *     responses:
- *       '200':
- *         description: Status do pedido atualizado com sucesso.
- *       '400':
- *         description: Status inválido.
- *       '404':
- *         description: Pedido não encontrado.
- */
 router.patch(
   "/:id/status",
   requireJsonContent,
@@ -231,41 +150,40 @@ router.patch(
     req: Request<{ id: string }, {}, UpdateOrderStatusRequest>,
     res: Response<ApiResult<Order>>,
   ) => {
-    const { id } = req.params;
-    const userId = req.userId;
-    const { status } = req.body;
-
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({
-        success: false,
-        error: "ID do pedido inválido",
-        code: "INVALID_INPUT",
-      });
-    }
-
-    if (id === "null") {
-      res.status(400).json({
-        success: false,
-        error: "paramentro null",
-        code: "NOT_NULL", // Código de erro específico da especificação
-      });
-    }
-
-    if (!isOrderStatus(status)) {
-      return res.status(400).json({
-        success: false,
-        error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(
-          OrderStatus,
-        ).join(", ")}`,
-        code: "INVALID_STATUS", // Código de erro específico da especificação
-      });
-    }
-
     try {
+      const store = await getStoreByUserId(req.userId!);
+      if (!store) {
+        return res.status(403).json({
+          success: false,
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
+        });
+      }
+      if (!store.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: "A loja do usuário está inativa.",
+          code: "STORE_INACTIVE",
+        });
+      }
+
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!isOrderStatus(status)) {
+        return res.status(400).json({
+          success: false,
+          error: `Status inválido ou não fornecido. Status válidos são: ${Object.values(
+            OrderStatus,
+          ).join(", ")}`,
+          code: "INVALID_STATUS",
+        });
+      }
+
       const updatedOrder = await prisma.order.update({
         where: {
           id,
-          userId,
+          storeId: store.id,
         },
         data: {
           status: status,

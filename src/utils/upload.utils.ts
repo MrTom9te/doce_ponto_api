@@ -47,7 +47,7 @@ export const uploadImageFromBase64 = async (
 
 		console.log(filePath, fileName);
 		await fs.writeFile(filePath, buffer);
-		return `images/${fileName}`;
+		return `/static/images/${fileName}`;
 	} catch (error) {
 		console.error("Erro ao salvar imagem Base64:", error);
 		return null;
@@ -55,24 +55,22 @@ export const uploadImageFromBase64 = async (
 };
 
 export const deleteImageFromFileSystem = async (imageUrl: string | null | undefined): Promise<void> => {
-  if (!imageUrl || !imageUrl.startsWith('/images/')) {
-    return; // Não é uma URL de imagem local ou é nula/vazia
-  }
-
+  if (!imageUrl) return;
   try {
-    const fileName = path.basename(imageUrl); // Extrai o nome do arquivo da URL
-    // Ajuste o caminho conforme a localização real do seu diretório 'public/images'
-    const uploadDir = path.join(__dirname, '..', '..', 'public', 'images');
-    const filePath = path.join(uploadDir, fileName);
-
-    // Verifica se o arquivo existe antes de tentar deletar
-    await fs.access(filePath); // Lança erro se o arquivo não existir
-    await fs.unlink(filePath); // Deleta o arquivo
-    console.log(`Imagem '${filePath}' deletada com sucesso.`);
-  } catch (error:any) {
-    // Se o arquivo não existe (ENOENT), apenas ignora.
-    // Outros erros são logados.
-    if (error.code !== 'ENOENT') {
+    let fileName: string | null = null;
+    if (imageUrl.startsWith('/static/images/')) {
+      fileName = imageUrl.replace('/static/images/', '');
+    } else if (imageUrl.startsWith('/images/')) {
+      // suporte legado
+      fileName = imageUrl.replace('/images/', '');
+    }
+    if (!fileName) return;
+    const uploadDir = path.join(__dirname, "..", "..", "public", "images");
+    const fullPath = path.join(uploadDir, fileName);
+    await fs.unlink(fullPath);
+  } catch (error: any) {
+    // Se o arquivo não existe (ENOENT), apenas ignora. Outros erros são logados.
+    if (error?.code !== 'ENOENT') {
       console.error(`Erro ao deletar imagem '${imageUrl}':`, error);
     }
   }

@@ -16,10 +16,10 @@
  */
 
 import * as runtime from "@prisma/client/runtime/library"
-import type * as Prisma from "../models.js"
-import { type PrismaClient } from "./class.js"
+import type * as Prisma from "../models"
+import { type PrismaClient } from "./class"
 
-export type * from '../models.js'
+export type * from '../models'
 
 export type DMMF = typeof runtime.DMMF
 
@@ -391,8 +391,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  Store: 'Store',
   Product: 'Product',
-  Order: 'Order'
+  Order: 'Order',
+  AnonymousSession: 'AnonymousSession'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "product" | "order"
+    modelProps: "user" | "store" | "product" | "order" | "anonymousSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -483,6 +485,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    Store: {
+      payload: Prisma.$StorePayload<ExtArgs>
+      fields: Prisma.StoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.StoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.StoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        findFirst: {
+          args: Prisma.StoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.StoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        findMany: {
+          args: Prisma.StoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>[]
+        }
+        create: {
+          args: Prisma.StoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        createMany: {
+          args: Prisma.StoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.StoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>[]
+        }
+        delete: {
+          args: Prisma.StoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        update: {
+          args: Prisma.StoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        deleteMany: {
+          args: Prisma.StoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.StoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.StoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>[]
+        }
+        upsert: {
+          args: Prisma.StoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$StorePayload>
+        }
+        aggregate: {
+          args: Prisma.StoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateStore>
+        }
+        groupBy: {
+          args: Prisma.StoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.StoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.StoreCountAggregateOutputType> | number
         }
       }
     }
@@ -634,6 +710,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AnonymousSession: {
+      payload: Prisma.$AnonymousSessionPayload<ExtArgs>
+      fields: Prisma.AnonymousSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnonymousSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnonymousSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.AnonymousSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnonymousSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        findMany: {
+          args: Prisma.AnonymousSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        create: {
+          args: Prisma.AnonymousSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        createMany: {
+          args: Prisma.AnonymousSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnonymousSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.AnonymousSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        update: {
+          args: Prisma.AnonymousSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnonymousSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnonymousSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnonymousSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnonymousSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnonymousSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.AnonymousSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnonymousSession>
+        }
+        groupBy: {
+          args: Prisma.AnonymousSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnonymousSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnonymousSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnonymousSessionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -685,6 +835,33 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const StoreScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  ownerId: 'ownerId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  street: 'street',
+  number: 'number',
+  neighborhood: 'neighborhood',
+  city: 'city',
+  state: 'state',
+  zipCode: 'zipCode',
+  complement: 'complement',
+  supportedDeliveryTypes: 'supportedDeliveryTypes',
+  logoUrl: 'logoUrl',
+  themeColor: 'themeColor',
+  layoutStyle: 'layoutStyle',
+  fontFamily: 'fontFamily',
+  isActive: 'isActive',
+  isOpen: 'isOpen',
+  openingHours: 'openingHours'
+} as const
+
+export type StoreScalarFieldEnum = (typeof StoreScalarFieldEnum)[keyof typeof StoreScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -694,7 +871,7 @@ export const ProductScalarFieldEnum = {
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  userId: 'userId'
+  storeId: 'storeId'
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -728,10 +905,24 @@ export const OrderScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   productId: 'productId',
-  userId: 'userId'
+  storeId: 'storeId',
+  anonId: 'anonId',
+  orderAccessCode: 'orderAccessCode'
 } as const
 
 export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const AnonymousSessionScalarFieldEnum = {
+  id: 'id',
+  tokenVersion: 'tokenVersion',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  lastSeen: 'lastSeen',
+  revoked: 'revoked'
+} as const
+
+export type AnonymousSessionScalarFieldEnum = (typeof AnonymousSessionScalarFieldEnum)[keyof typeof AnonymousSessionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -742,12 +933,29 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 export const NullsOrder = {
@@ -793,6 +1001,41 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
 
 
 /**
+ * Reference to a field of type 'DeliveryType[]'
+ */
+export type ListEnumDeliveryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DeliveryType'
+ */
+export type EnumDeliveryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryType'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'Decimal'
  */
 export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -803,13 +1046,6 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
- * Reference to a field of type 'Boolean'
- */
-export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -838,20 +1074,6 @@ export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'OrderStatus[]'
  */
 export type ListEnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderStatus[]'>
-    
-
-
-/**
- * Reference to a field of type 'DeliveryType'
- */
-export type EnumDeliveryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryType'>
-    
-
-
-/**
- * Reference to a field of type 'DeliveryType[]'
- */
-export type ListEnumDeliveryTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DeliveryType[]'>
     
 
 
@@ -956,8 +1178,10 @@ export interface PrismaClientOptions {
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  store?: Prisma.StoreOmit
   product?: Prisma.ProductOmit
   order?: Prisma.OrderOmit
+  anonymousSession?: Prisma.AnonymousSessionOmit
 }
 
 /* Types for Logging */
