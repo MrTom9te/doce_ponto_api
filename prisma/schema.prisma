@@ -55,6 +55,10 @@ model Store {
   layoutStyle String? @default("grid")
   fontFamily  String? @default("Inter")
 
+  isActive     Boolean @default(false)
+  isOpen       Boolean @default(false)
+  openingHours Json?
+
   products Product[]
   orders   Order[]
 
@@ -119,6 +123,9 @@ model Order {
   storeId String
   store   Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
+  anonId           String?
+  orderAccessCode  String?  @unique
+
   @@map("pedidos")
 }
 
@@ -135,3 +142,15 @@ enum OrderStatus {
   delivered
   cancelled
 }
+
+model AnonymousSession {
+  id           String   @id @default(uuid())
+  tokenVersion Int      @default(1)
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  lastSeen     DateTime @default(now())
+  revoked      Boolean  @default(false)
+
+  @@map("anonymous_sessions")
+}
+
