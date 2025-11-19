@@ -511,10 +511,6 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type ProductCreateNestedOneWithoutOrdersInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutOrdersInput, Prisma.ProductUncheckedCreateWithoutOrdersInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutOrdersInput
