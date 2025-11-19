@@ -37,12 +37,13 @@ router.get(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
         });
       }
+      
 
       const { page = 1, limit = 20, active } = req.query;
       const skip = (Number(page) - 1) * Number(limit);
@@ -84,10 +85,10 @@ router.get(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
         });
       }
 
@@ -133,10 +134,10 @@ router.post(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
         });
       }
 
@@ -190,10 +191,17 @@ router.put(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
+        });
+      }
+      if (!store.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: "A loja do usuário está inativa.",
+          code: "STORE_INACTIVE",
         });
       }
 
@@ -272,10 +280,17 @@ router.delete(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
+        });
+      }
+      if (!store.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: "A loja do usuário está inativa.",
+          code: "STORE_INACTIVE",
         });
       }
 
@@ -326,10 +341,17 @@ router.patch(
     try {
       const store = await getStoreByUserId(req.userId!);
       if (!store) {
-        return res.status(404).json({
+        return res.status(403).json({
           success: false,
-          error: "Loja não encontrada para este usuário.",
-          code: "STORE_NOT_FOUND",
+          error: "Usuário não possui loja cadastrada.",
+          code: "STORE_NOT_FOUND_FOR_USER",
+        });
+      }
+      if (!store.isActive) {
+        return res.status(403).json({
+          success: false,
+          error: "A loja do usuário está inativa.",
+          code: "STORE_INACTIVE",
         });
       }
 
