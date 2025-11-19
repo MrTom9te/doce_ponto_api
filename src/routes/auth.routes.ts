@@ -2,22 +2,23 @@ import bcrypt from "bcryptjs";
 import { type Request, type Response, Router } from "express";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@/generated/prisma/client";
+import { requireJsonContent } from "@/middleware/auth.middleware";
 import type { ApiResult } from "@/types/api.types";
 import type {
   AuthData,
   LoginRequest,
   RegisterRequest,
 } from "@/types/auth.types";
-import { uploadImageFromBase64 } from "@/utils/upload.utils";
 
 const prisma = new PrismaClient();
 const router = Router();
 
 router.post(
   "/register",
+  requireJsonContent,
   async (req: Request<{}, {}, RegisterRequest>, res: Response) => {
     try {
-      const { name, email, password, phone, store: storeInput } = req.body;
+      const { name, email, password, phone } = (req.body || {}) as RegisterRequest;
 
       // --- 1. Validação de Entrada ---
       if (!name || !email || !password || !phone) {
@@ -67,71 +68,13 @@ router.post(
       // O 'salt' é um fator de complexidade para o hash. 10 é um bom valor padrão.
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // --- 4. Criar o Usuário e a Loja atomicamente ---
-      // Preparar dados da loja (se fornecidos)
-      // Slug base a partir do nome da loja (ou do usuário se não fornecido)
-      const desiredStoreName = storeInput?.name ?? name;
-      const baseSlug = (storeInput?.slug ?? desiredStoreName)
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "");
-
-      // Se slug não for fornecido explicitamente, gera um sufixo para evitar colisões
-      let finalSlug = storeInput?.slug ?? `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
-
-      // Verificar unicidade do slug se fornecido
-      if (storeInput?.slug) {
-        const existingStoreWithSlug = await prisma.store.findUnique({ where: { slug: storeInput.slug } });
-        if (existingStoreWithSlug) {
-          return res.status(400).json({
-            success: false,
-            error: "Esta URL da loja já está em uso.",
-            code: "DUPLICATE_SLUG",
-          });
-        }
-        finalSlug = storeInput.slug;
-      }
-
-      // Upload opcional da logo
-      let uploadedLogoUrl: string | undefined;
-      if (storeInput?.imageBase64 !== undefined) {
-        const maybeUrl = await uploadImageFromBase64(storeInput.imageBase64);
-        if (maybeUrl === null) {
-          return res.status(400).json({
-            success: false,
-            error: "Falha ao processar a imagem Base64 do logo",
-            code: "INVALID_INPUT",
-          });
-        }
-        uploadedLogoUrl = maybeUrl;
-      }
-
+      // --- 4. Criar apenas o Usuário (sem criar loja automaticamente) ---
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
           password: hashedPassword,
           phone,
-          store: {
-            create: {
-              name: desiredStoreName,
-              slug: finalSlug,
-              logoUrl: storeInput?.logoUrl ?? uploadedLogoUrl,
-              themeColor: storeInput?.themeColor,
-              layoutStyle: storeInput?.layoutStyle,
-              fontFamily: storeInput?.fontFamily,
-              street: storeInput?.street,
-              number: storeInput?.number,
-              neighborhood: storeInput?.neighborhood,
-              city: storeInput?.city,
-              state: storeInput?.state,
-              zipCode: storeInput?.zipCode,
-              complement: storeInput?.complement,
-              supportedDeliveryTypes: storeInput?.supportedDeliveryTypes
-                ? { set: storeInput.supportedDeliveryTypes }
-                : undefined,
-            },
-          },
         },
       });
 
@@ -147,7 +90,7 @@ router.post(
 
       return res.status(201).json({
         success: true,
-        message: "Usuário e loja registrados com sucesso",
+        message: "Usuário registrado com sucesso",
         data: userResponse,
       });
     } catch (error) {
@@ -163,12 +106,13 @@ router.post(
 
 router.post(
   "/login",
+  requireJsonContent,
   async (
     req: Request<{}, {}, LoginRequest>,
     res: Response<ApiResult<AuthData>>,
   ) => {
     try {
-      const { email, password } = req.body;
+      const { email, password } = (req.body || {}) as LoginRequest;
 
       // 1. Validação de entrada básica
       if (!email || !password) {
