@@ -2,7 +2,6 @@ target
 node_modules
 .zed/
 public
-.env
 doce_ponto_test
 src/generated/prisma
 .vercel
