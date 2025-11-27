@@ -380,7 +380,7 @@ router.post(
 
       const orderNumber = `PED-${uuidV4()
         .substring(0, 3)
-        .toUpperCase()}-${moment().format("'YYMMDDHHmmss'")}`;
+        .toUpperCase()}-${moment().format("YYMMDDHHmmss")}`;
 
       const anonId = (req as any).anonId as string;
       const orderAccessCode = uuidV4().replace(/-/g, "").substring(0, 8).toUpperCase();
